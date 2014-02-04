@@ -16,7 +16,6 @@ Makefile.in
 Makefile
 intltool-*
 configure
-config.*
 aclocal.m4
 autom4te.cache/
 bin/
@@ -27,8 +26,7 @@ ltmain.sh
 missing
 CmisSync/Linux/cmissync
 CmisSync/Mac/git
-CmisSync.Lib/Defines.cs
-CmisSync/Linux/Defines.cs
+Defines.cs
 gnome-doc-utils.make
 desktop.ini
 _ReSharper.*
@@ -44,3 +42,4 @@ cmissync-*.zip
 cmissync-*.tar*
 build/cmissync.spec
 /.project
+ConfigOverride.cs

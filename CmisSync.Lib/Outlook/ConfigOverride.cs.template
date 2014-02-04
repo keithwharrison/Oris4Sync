@@ -1,0 +1,42 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace OutlookPlugin
+{
+    public class ConfigOverride : Config
+    {
+        public override string ConsumerKey
+        {
+            get
+            {
+                return "TemplateConsumerKey";
+            }
+        }
+
+        public override string ConsumerSecret
+        {
+            get
+            {
+                return "TemplateConsumerSecret";
+            }
+        }
+
+        public override string TestUsername
+        {
+            get
+            {
+                return "TemplateTestUsername";
+            }
+        }
+
+        public override string TestPassword
+        {
+            get
+            {
+                return "TemplateTestPassword";
+            }
+        }
+    }
+}

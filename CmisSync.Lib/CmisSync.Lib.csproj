@@ -37,8 +37,12 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\Extras\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp">
+      <HintPath>..\CmisSync\Windows\packages\RestSharp.104.4.0\lib\net4\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -51,16 +55,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cmis\BaseException.cs" />
+    <Compile Include="Cmis\Exceptions.cs" />
     <Compile Include="Cmis\Database.cs" />
     <Compile Include="FolderLock.cs" />
+    <Compile Include="Outlook\Config.cs" />
+    <Compile Include="Outlook\ConfigOverride.cs" />
+    <Compile Include="Outlook\Database.cs" />
+    <Compile Include="Outlook\Model.cs" />
+    <Compile Include="Outlook\OutlookUtils.cs" />
+    <Compile Include="Outlook\OutlookPlugin.cs" />
+    <Compile Include="Outlook\Oris4RestService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sync\ChangeLogStrategy.cs" />
     <Compile Include="ConfigMigration.cs" />
     <Compile Include="Sync\SynchronizedFolder.cs" />
     <Compile Include="Sync\CrawlStrategy.cs" />
-    <Compile Include="Cmis\PermissionDeniedException.cs" />
-    <Compile Include="Cmis\ServerNotFoundException.cs" />
     <Compile Include="Cmis\CmisUtils.cs" />
     <Compile Include="Cmis\MimeType.cs" />
     <Compile Include="Sync\CmisRepo.cs" />
@@ -90,6 +99,38 @@
       <Project>{181FE707-E161-4722-9F38-6AAAB6FAA106}</Project>
       <Name>log4net.vs2010</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="Microsoft.Office.Core">
+      <Guid>{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>5</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="Microsoft.Office.Interop.Outlook">
+      <Guid>{00062FFF-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>9</VersionMajor>
+      <VersionMinor>4</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="stdole">
+      <Guid>{00020430-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
