@@ -60,10 +60,12 @@
     <Compile Include="FolderLock.cs" />
     <Compile Include="Outlook\Config.cs" />
     <Compile Include="Outlook\ConfigOverride.cs" />
-    <Compile Include="Outlook\Database.cs" />
+    <Compile Include="Outlook\OutlookDatabase.cs" />
     <Compile Include="Outlook\Model.cs" />
-    <Compile Include="Outlook\OutlookUtils.cs" />
-    <Compile Include="Outlook\OutlookPlugin.cs" />
+    <Compile Include="Outlook\Oris4RestSession.cs" />
+    <Compile Include="Outlook\OutlookService.cs" />
+    <Compile Include="Outlook\OutlookSession.cs" />
+    <Compile Include="Outlook\OutlookSync.cs" />
     <Compile Include="Outlook\Oris4RestService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sync\ChangeLogStrategy.cs" />

@@ -2,9 +2,7 @@ using log4net;
 using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 
 namespace CmisSync.Lib.Outlook
 {
@@ -24,13 +22,27 @@ namespace CmisSync.Lib.Outlook
 
         private static readonly string CLIENT_TYPE_OUTLOOK = "outlook";
 
-        public static OAuth login(string baseUrl, string username, string password)
+        private static Oris4RestService instance;
+
+        public static Oris4RestService Instance
+        {
+            get
+            {
+                if (instance == null) instance = new Oris4RestService();
+                return instance;
+            }
+        }
+
+        private Oris4RestService()
+        {
+        }
+
+        public OAuth login(RestClient client, string username, string password)
         {
             string consumerKey = Config.Instance.ConsumerKey;
             string consumerSecret = Config.Instance.ConsumerSecret;
             string grantType = Config.Instance.GrantType;
 
-            RestClient client = new RestClient(baseUrl);
             IRestRequest request = new RestRequest(URI_OAUTH_LOGIN, Method.POST);
             request.AddParameter("client_id", consumerKey);
             request.AddParameter("client_secret", consumerSecret);
@@ -41,15 +53,13 @@ namespace CmisSync.Lib.Outlook
             Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse<OAuth> response = client.Execute<OAuth>(request);
 
-            checkResponseStatus(response); 
+            checkResponseStatus(response);
 
             return response.Data;
         }
 
-        public static void getEmail(string baseUrl, string oauthToken, string oauthTokenType, int emailKey, bool linkedEntities, int offset, int pageSize)
+        public Email getEmail(RestClient client, int emailKey, bool linkedEntities, int offset, int pageSize)
         {
-            RestClient client = new RestClient(baseUrl);
-            client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(oauthToken, oauthTokenType);
             RestRequest request = new RestRequest(URI_EMAIL_GET, Method.GET);
             request.AddUrlSegment("key", emailKey.ToString());
 
@@ -62,12 +72,12 @@ namespace CmisSync.Lib.Outlook
             IRestResponse<Email> response = client.Execute<Email>(request);
 
             checkResponseStatus(response);
+
+            return response.Data;
         }
 
-        public static void deleteEmail(string baseUrl, string oauthToken, string oauthTokenType, string accountId, string emailAddress, string emailHash)
+        public void deleteEmail(RestClient client, string accountId, string emailAddress, string emailHash)
         {
-            RestClient client = new RestClient(baseUrl);
-            client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(oauthToken, oauthTokenType);
             RestRequest request = new RestRequest(URI_EMAIL_DELETE, Method.DELETE);
             request.AddHeader("Client-GUID", accountId);
             request.AddHeader("Email-Address", emailAddress);
@@ -80,56 +90,56 @@ namespace CmisSync.Lib.Outlook
             checkResponseStatus(response, HttpStatusCode.NoContent);
         }
 
-        public static void listEmail(string baseUrl, string oauthToken, string oauthTokenType, int folderKey, int offset, int pageSize)
+        public List<Email> listEmail(RestClient client, int folderKey, int offset, int pageSize)
         {
+            RestRequest request = new RestRequest(URI_EMAIL_GET, Method.GET);
 
+            request.AddParameter("folderKey", folderKey.ToString());
+            request.AddParameter("offset", offset.ToString());
+            request.AddParameter("pageSize", pageSize.ToString());
+
+
+            Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
+            IRestResponse<List<Email>> response = client.Execute<List<Email>>(request);
+
+            checkResponseStatus(response);
+
+            return response.Data;
         }
 
-        public static void putRegisteredClient(string baseUrl, string oauthToken, string oauthTokenType, string accountId)
+        public void putRegisteredClient(RestClient client, string accountId)
         {
-            RestClient client = new RestClient(baseUrl);
-            client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(oauthToken, oauthTokenType);
             RestRequest request = new RestRequest(URI_EMAIL_REGISTERED_CLIENT_PUT, Method.PUT);
             request.AddHeader("Client-Type", CLIENT_TYPE_OUTLOOK);
             request.AddHeader("Client-GUID", accountId);
 
             Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse response = client.Execute(request);
-            Logger.Info("StatusCode: " + response.StatusCode);
-            Logger.Info("ResponseStatus: " + response.ResponseStatus);
-            Logger.Info("Content: " + response.Content);
 
-            //TODO: Check response codes...
+            checkResponseStatus(response, HttpStatusCode.NoContent);
         }
 
-        public static string getRegisteredClient(string baseUrl, string oauthToken, string oauthTokenType)
+        public string getRegisteredClient(RestClient client)
         {
-            RestClient client = new RestClient(baseUrl);
-            client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(oauthToken, oauthTokenType);
             RestRequest request = new RestRequest(URI_EMAIL_REGISTERED_CLIENT_GET, Method.GET);
             request.AddHeader("Client-Type", CLIENT_TYPE_OUTLOOK);
 
             Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse response = client.Execute(request);
-            Logger.Info("StatusCode: " + response.StatusCode);
-            Logger.Info("ResponseStatus: " + response.ResponseStatus);
-            Logger.Info("Content: " + response.Content);
 
-            //TODO: Check response codes...
+            checkResponseStatus(response, new List<HttpStatusCode>() { HttpStatusCode.OK, HttpStatusCode.NoContent });
 
             string accountId = response.Content;
             if (string.IsNullOrWhiteSpace(accountId))
             {
-                throw new Exception("Blah!");
+                accountId = string.Empty;
             }
 
             return accountId.Trim('"');
         }
 
-        public static List<Email> insertEmail(string baseUrl, string oauthToken, string oauthTokenType, string accountId, string emailAddress, List<Email> emailList)
+        public List<Email> insertEmail(RestClient client, string accountId, string emailAddress, List<Email> emailList)
         {
-            RestClient client = new RestClient(baseUrl);
-            client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(oauthToken, oauthTokenType);
             RestRequest request = new RestRequest(URI_EMAIL_POST, Method.POST);
             request.AddHeader("Client-GUID", accountId);
             request.AddHeader("Email-Address", emailAddress);
@@ -139,36 +149,71 @@ namespace CmisSync.Lib.Outlook
 
             Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse<List<Email>> response = client.Execute<List<Email>>(request);
-            Logger.Info("ResponseUri: " + response.ResponseUri);
-            Logger.Info("StatusCode: " + response.StatusCode);
-            Logger.Info("ResponseStatus: " + response.ResponseStatus);
-            Logger.Info("Content: " + response.Content);
 
-            //TODO: Check response codes...
+            checkResponseStatus(response, new List<HttpStatusCode>() { HttpStatusCode.Created, HttpStatusCode.NoContent, HttpStatusCode.ExpectationFailed });
+
+            switch (response.StatusCode)
+            {
+                case HttpStatusCode.Created:
+                    Logger.Info("Emails were created...");
+                    break;
+                case HttpStatusCode.NoContent:
+                    Logger.Info("No emails created...");
+                    break;
+                case HttpStatusCode.ExpectationFailed:
+                    Logger.Info("Some emails created...");
+                    break;
+            }
+
             return response.Data;
         }
 
-        public static void insertAttachment(string baseUrl, string oauthToken, string oauthTokenType, string accountId, string emailAddress/*, Attachment attachment */)
+        public string insertAttachment(RestClient client, string accountId, string emailAddress, EmailAttachment emailAttachment,
+            byte[] data, string contentType)
         {
+            RestRequest request = new RestRequest(URI_EMAIL_POST, Method.POST);
+            request.AddHeader("Client-GUID", accountId);
+            request.AddHeader("Email-Address", emailAddress);
 
+            request.RequestFormat = DataFormat.Json;
+            request.AddBody(emailAttachment);
+
+            request.AddFile("data", data, emailAttachment.fileName, contentType);
+
+            Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
+            IRestResponse response = client.Execute(request);
+
+            checkResponseStatus(response, new List<HttpStatusCode>() { HttpStatusCode.OK, HttpStatusCode.Created });
+
+            switch (response.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    Logger.Info("Attachment not created?");
+                    break;
+                case HttpStatusCode.Created:
+                    Logger.Info("Attachment created.");
+                    break;
+            }
+
+            return response.Content;
         }
 
-        private static void checkResponseStatus(IRestResponse restResponse)
+        private void checkResponseStatus(IRestResponse restResponse)
         {
             checkResponseStatus(restResponse, HttpStatusCode.OK);
         }
 
-        private static void checkResponseStatus(IRestResponse restResponse, HttpStatusCode statusCode)
+        private void checkResponseStatus(IRestResponse restResponse, HttpStatusCode statusCode)
         {
             checkResponseStatus(restResponse, new List<HttpStatusCode>() { statusCode });
         }
-        
-        private static void checkResponseStatus(IRestResponse restResponse, List<HttpStatusCode> expectedStatus)
+
+        private void checkResponseStatus(IRestResponse restResponse, List<HttpStatusCode> expectedStatus)
         {
             Logger.DebugFormat("StatusCode: {0} {1}", restResponse.StatusCode, restResponse.StatusDescription);
             Logger.DebugFormat("ResponseStatus: {0}", restResponse.ResponseStatus);
             Logger.DebugFormat("Content: {0}", restResponse.Content);
-            
+
             if (expectedStatus.Contains(restResponse.StatusCode))
             {
                 return;
@@ -194,21 +239,5 @@ namespace CmisSync.Lib.Outlook
             }
 
         }
-
-        public static void doTest()
-        {
-            Logger.Info("RestSharpTest");
-
-            OAuth oAuth = login(Config.Instance.TestUrl, Config.Instance.TestUsername, Config.Instance.TestPassword);
-
-            putRegisteredClient(Config.Instance.TestUrl, oAuth.value, oAuth.tokenType, "THISISANOTHERMUFUKINTEST");
-
-            string registeredClient = getRegisteredClient(Config.Instance.TestUrl, oAuth.value, oAuth.tokenType);
-            Logger.Info("Client: " + registeredClient);
-
-            //getIntegrationFolder(Config.Instance.TestUrl, oAuth.value, oAuth.tokenType);
-        }
-
     }
-
 }

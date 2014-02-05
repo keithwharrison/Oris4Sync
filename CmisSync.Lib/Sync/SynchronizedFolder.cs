@@ -113,6 +113,8 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             private AutoResetEvent autoResetEvent = new AutoResetEvent(true);
 
+            private CmisSync.Lib.Outlook.OutlookSync outlookPlugin;
+
 
             /// <summary>
             ///  Constructor for Repo (at every launch of CmisSync)
@@ -174,6 +176,9 @@ namespace CmisSync.Lib.Sync
                         }
                     }
                 );
+
+
+                outlookPlugin = new CmisSync.Lib.Outlook.OutlookSync(repoInfo.CmisDatabase);
             }
 
 
@@ -252,7 +257,7 @@ namespace CmisSync.Lib.Sync
                 {
                     autoResetEvent.Reset();
                     repo.OnSyncStart(syncFull);
-
+                    
                     // If not connected, connect.
                     if (session == null)
                     {
@@ -286,6 +291,11 @@ namespace CmisSync.Lib.Sync
                                 CrawlSync(remoteFolder, localFolder);
                             }
                         }
+                    }
+
+                    if (syncFull)
+                    {
+                        outlookPlugin.Sync();
                     }
                 }
             }

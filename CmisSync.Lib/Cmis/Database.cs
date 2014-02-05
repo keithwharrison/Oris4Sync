@@ -170,37 +170,6 @@ namespace CmisSync.Lib.Cmis
 
 
         /// <summary>
-        /// Calculate the SHA1 checksum of a file.
-        /// Code from http://stackoverflow.com/a/1993919/226958
-        /// </summary>
-        private string Checksum(string filePath)
-        {
-            using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            using (var bs = new BufferedStream(fs))
-            {
-                using (var sha1 = new SHA1Managed())
-                {
-                    byte[] hash = sha1.ComputeHash(bs);
-                    return ChecksumToString(hash);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Transforms a given hash into a string
-        /// </summary>
-        private string ChecksumToString(byte[] hash)
-        {
-            if(hash == null || hash.Length == 0) return String.Empty;
-            StringBuilder formatted = new StringBuilder(2 * hash.Length);
-            foreach (byte b in hash)
-            {
-                formatted.AppendFormat("{0:X2}", b);
-            }
-            return formatted.ToString();
-        }
-
-        /// <summary>
         /// Put all the values of a dictionary into a JSON string.
         /// </summary>
         private string Json(Dictionary<string, string[]> dictionary)
@@ -238,7 +207,7 @@ namespace CmisSync.Lib.Cmis
         {
             Logger.Debug("Starting database file addition for file: " + path);
             string normalizedPath = Normalize(path);
-            string checksum = ChecksumToString(filehash);
+            string checksum = Utils.ByteToHex(filehash);
             // Make sure that the modification date is always UTC, because sqlite has no concept of Time-Zones
             // See http://www.sqlite.org/datatype3.html
             if (null != serverSideModificationDate)
@@ -251,7 +220,7 @@ namespace CmisSync.Lib.Cmis
             // Calculate file checksum.
                 try
                 {
-                    checksum = Checksum(path);
+                    checksum = Utils.Sha1File(path);
                 }
                 catch (IOException e)
                 {
@@ -431,7 +400,7 @@ namespace CmisSync.Lib.Cmis
             string checksum;
             try
             {
-                checksum = Checksum(path);
+                checksum = Utils.Sha1File(path);
             }
             catch (IOException)
             {
@@ -490,7 +459,7 @@ namespace CmisSync.Lib.Cmis
             string currentChecksum = null;
             try
             {
-                currentChecksum = Checksum(path);
+                currentChecksum = Utils.Sha1File(path);
             }
             catch (IOException)
             {

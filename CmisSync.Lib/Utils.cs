@@ -6,6 +6,7 @@ using log4net;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Reflection;
+using System.Security.Cryptography;
 #if __MonoCS__
 //using Mono.Unix.Native;
 #endif
@@ -353,6 +354,81 @@ namespace CmisSync.Lib
                 return String.Format("{0:##.##} ᴋʙ", Math.Round(byteCount / 1024, 0));
             else
                 return byteCount.ToString() + " bytes";
+        }
+
+        /// <summary>
+        /// Calculate the SHA1 checksum of a file.
+        /// </summary>
+        public static string Sha1File(string filePath)
+        {
+            using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (BufferedStream bs = new BufferedStream(fs))
+            using (SHA1Managed sha1 = new SHA1Managed())
+            {
+                byte[] hash = sha1.ComputeHash(bs);
+                return ByteToHex(hash);
+            }
+        }
+
+        /// <summary>
+        /// Calculate the SHA1 checksum a data string.
+        /// </summary>
+        public static string Sha1Data(string data)
+        {
+            using (SHA1Managed sha1 = new SHA1Managed())
+            {
+                byte[] hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(data), 0, Encoding.UTF8.GetByteCount(data));
+                return ByteToHex(hash);
+            }
+        }
+
+        /// <summary>
+        /// Calculate the SHA256 checksum of a file.
+        /// </summary>
+        public static string Sha256File(string filePath)
+        {
+            using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (BufferedStream bs = new BufferedStream(fs))
+            using (SHA256Managed sha256 = new SHA256Managed())
+            {
+                byte[] hash = sha256.ComputeHash(bs);
+                return ByteToHex(hash, false);
+            }
+        }
+
+        /// <summary>
+        /// Calculate the SHA256 checksum of a data string.
+        /// </summary>
+        public static string Sha256Data(string data)
+        {
+            using (SHA256Managed sha256 = new SHA256Managed())
+            {
+                byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(data), 0, Encoding.UTF8.GetByteCount(data));
+                return ByteToHex(hash, false);
+            }
+        }
+
+        /// <summary>
+        /// Transforms a given hash into a hex string.
+        /// </summary>
+        public static string ByteToHex(byte[] hash)
+        {
+            return ByteToHex(hash, true);
+        }
+
+        /// <summary>
+        /// Transforms a given hash into a hex string.
+        /// </summary>
+        public static string ByteToHex(byte[] hash, bool uppercase)
+        {
+            if (hash == null || hash.Length == 0) return String.Empty;
+            StringBuilder formatted = new StringBuilder(2 * hash.Length);
+            string format = uppercase ? "{0:X2}" : "{0:x2}";
+            foreach (byte b in hash)
+            {
+                formatted.AppendFormat(format, b);
+            }
+            return formatted.ToString();
         }
     }
 }

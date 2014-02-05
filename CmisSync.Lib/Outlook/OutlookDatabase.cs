@@ -1,11 +1,8 @@
+using log4net;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Data.SQLite;
 using System.IO;
-using System.Security.Cryptography;
-using log4net;
 
 namespace CmisSync.Lib.Outlook
 {
@@ -14,12 +11,12 @@ namespace CmisSync.Lib.Outlook
     /// Database to cache remote information from Oris4.
     /// Implemented with SQLite.
     /// </summary>
-    public class Database : IDisposable
+    public class OutlookDatabase : IDisposable
     {
         /// <summary>
         /// Log.
         /// </summary>
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(Database));
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(OutlookDatabase));
 
 
         /// <summary>
@@ -42,7 +39,7 @@ namespace CmisSync.Lib.Outlook
         /// <summary>
         /// Constructor.
         /// </summary>
-        public Database(string dataPath)
+        public OutlookDatabase(string dataPath)
         {
             this.databaseFileName = dataPath;
         }
@@ -51,7 +48,7 @@ namespace CmisSync.Lib.Outlook
         /// <summary>
         /// Destructor.
         /// </summary>
-        ~Database()
+        ~OutlookDatabase()
         {
             Dispose(false);
         }
