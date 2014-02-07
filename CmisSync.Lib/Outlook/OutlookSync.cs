@@ -10,20 +10,28 @@ namespace CmisSync.Lib.Outlook
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(OutlookSync));
 
+        private RepoInfo repoInfo;
         private OutlookDatabase outlookDatabase;
+        private string repoUrl;
 
-        public OutlookSync(string dataPath)
+        public OutlookSync(RepoInfo repoInfo)
         {
-            Logger.Info("Constructor...");
+            this.repoInfo = repoInfo;
+
+            //Database
+            string dataPath = repoInfo.CmisDatabase;
             this.outlookDatabase = new OutlookDatabase(Path.Combine(Path.GetDirectoryName(dataPath),
                 Path.GetFileNameWithoutExtension(dataPath) + " (outlook plugin)" +
                 Path.GetExtension(dataPath)));
+
+            //Url
+            repoUrl = repoInfo.Address.GetLeftPart(UriPartial.Authority);
         }
 
         public void Sync()
         {
             OutlookSession outlookSession = new OutlookSession();
-            Oris4RestSession restSession = new Oris4RestSession(Config.Instance.TestUrl);
+            Oris4RestSession restSession = new Oris4RestSession(repoUrl);
 
 
             MAPIFolder pickedFolder = outlookSession.getFolderFromID("00000000DF515440C9C02E409C10AA4D4B9BD65582800000"); //Inbox
@@ -57,7 +65,7 @@ namespace CmisSync.Lib.Outlook
             }
 
 
-            restSession.login(Config.Instance.TestUsername, Config.Instance.TestPassword);
+            restSession.login(repoInfo.User, repoInfo.Password.ToString());
 
             string defaultStoreId = outlookSession.getDefaultStoreID();
 

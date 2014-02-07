@@ -67,6 +67,11 @@ namespace CmisSync.Lib.Outlook
             }
         }
 
+        public bool checkForOutlookInstallation()
+        {
+            return getOutlookVersionString() != null;
+        }
+
         public bool checkForProfile()
         {
             string outlookVersionNumber = getOutlookVersionNumber();

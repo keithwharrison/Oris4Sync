@@ -590,10 +590,8 @@ namespace CmisSync {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Sorry, Oris4 Sync can not find a CMIS server at this address.
-        ///Please ask your server administrator for the CMIS endpoint URL.
-        ///If you are sure about the address, open it in a browser and send
-        ///the resulting XML to cmissync@aegif.jp.
+        ///   Looks up a localized string similar to Sorry, Oris4 Sync can not find a server at this address.  
+        ///Please ensure you typed the URL correctly. Contact support@oris4.com if the problem persists..
         /// </summary>
         internal static string Sorry {
             get {

@@ -17,6 +17,7 @@
 
 using CmisSync.CmisTree;
 using CmisSync.Lib.Cmis;
+using CmisSync.Lib.Outlook;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -958,6 +959,100 @@ namespace CmisSync
                             }
                         #endregion
 
+                        // Outlook integration.
+                        #region Page Outlook
+                        case PageType.Outlook:
+                            {
+                                // UI elements.
+
+                                Header = "Sync Outlook mail with Oris4?";//Properties_Resources.OutlookSync;
+                                
+
+                                CheckBox outlookCheckbox = new CheckBox()
+                                {
+                                    Content = "Enable Outlook Integration",//Properties_Resources.OutlookEnabled,
+                                    IsChecked = false,
+                                };
+
+                                TextBlock outlookTreeViewLabel = new TextBlock()
+                                {
+                                    Text = "Select outlook folders to sync from the list below...",//Properties_Resources.SelectOutlookFolders,
+                                    Visibility = Visibility.Hidden,
+                                };
+                                
+                                TreeView outlookTreeView = new TreeView()
+                                {
+                                    Height = 240,
+                                    Width = 420,
+                                    Visibility = Visibility.Hidden,
+                                };
+
+                                Button cancel_button = new Button()
+                                {
+                                    Content = Properties_Resources.Cancel
+                                };
+
+                                Button continue_button = new Button()
+                                {
+                                    Content = CmisSync.Properties_Resources.ResourceManager.GetString("Continue", CultureInfo.CurrentCulture)
+                                };
+
+                                Button back_button = new Button()
+                                {
+                                    Content = Properties_Resources.Back,
+                                    IsDefault = false
+                                };
+
+                                Buttons.Add(back_button);
+                                Buttons.Add(continue_button);
+                                Buttons.Add(cancel_button);
+
+                                // Local Folder Name
+                                ContentCanvas.Children.Add(outlookCheckbox);
+                                Canvas.SetTop(outlookCheckbox, 60);
+                                Canvas.SetLeft(outlookCheckbox, 185);
+
+                                ContentCanvas.Children.Add(outlookTreeViewLabel);
+                                Canvas.SetTop(outlookTreeViewLabel, 90);
+                                Canvas.SetLeft(outlookTreeViewLabel, 185);
+                                 
+                                ContentCanvas.Children.Add(outlookTreeView);
+                                Canvas.SetTop(outlookTreeView, 110);
+                                Canvas.SetLeft(outlookTreeView, 185);
+
+                                outlookCheckbox.Focus();
+
+                                outlookCheckbox.Click += delegate
+                                {
+                                    if (outlookCheckbox.IsChecked.Value && outlookTreeView.Items.Count <= 0)
+                                    {
+                                        //Populate tree...
+                                        OutlookSession outlookSession = new OutlookSession();
+                                        List<OutlookFolder> root = outlookSession.getFolderTree();
+                                        populateTreeView(outlookTreeView.Items, root);
+                                    }
+                                    outlookTreeViewLabel.Visibility = outlookCheckbox.IsChecked.Value ? Visibility.Visible : Visibility.Hidden;
+                                    outlookTreeView.Visibility = outlookCheckbox.IsChecked.Value ? Visibility.Visible : Visibility.Hidden;
+                                };
+
+                                cancel_button.Click += delegate
+                                {
+                                    Controller.PageCancelled();
+                                };
+
+                                continue_button.Click += delegate
+                                {
+                                    Controller.OutlookPageCompleted(Controller.saved_remote_path);
+                                };
+
+                                back_button.Click += delegate
+                                {
+                                    //Controller.BackToCustomize();
+                                };
+                                break;
+                            }
+                        #endregion
+                        
                         // Final page of the remote folder addition dialog: end of the addition wizard.
                         #region Page Finished
                         case PageType.Finished:
@@ -1258,6 +1353,23 @@ namespace CmisSync
 
             Controller.PageCancelled();
             Logger.Debug("Exiting constructor.");
+        }
+
+        private void populateTreeView(ItemCollection treeViewItems, List<OutlookFolder> folderTree)
+        {
+            foreach(OutlookFolder outlookFolder in folderTree)
+            {
+                TreeViewItem treeViewItem = new TreeViewItem()
+                {
+                    Tag = outlookFolder,
+                    Header = new CheckBox()
+                    {
+                        Content = outlookFolder.name,
+                    },
+                };
+                populateTreeView(treeViewItem.Items, outlookFolder.children);
+                treeViewItems.Add(treeViewItem); 
+            }
         }
 
         private List<string> getIgnoredFolder(Folder f)

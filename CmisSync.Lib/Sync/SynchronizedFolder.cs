@@ -178,7 +178,7 @@ namespace CmisSync.Lib.Sync
                 );
 
 
-                outlookPlugin = new CmisSync.Lib.Outlook.OutlookSync(repoInfo.CmisDatabase);
+                outlookPlugin = new CmisSync.Lib.Outlook.OutlookSync(repoInfo);
             }
 
 

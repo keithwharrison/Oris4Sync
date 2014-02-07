@@ -53,30 +53,5 @@ namespace CmisSync.Lib.Outlook
                 return "password";
             }
         }
-
-
-        public virtual string TestUrl
-        {
-            get
-            {
-                return "http://localhost:8080";
-            }
-        }
-
-        public virtual string TestUsername
-        {
-            get
-            {
-                return "username";
-            }
-        }
-
-        public virtual string TestPassword
-        {
-            get
-            {
-                return "password";
-            }
-        }
     }
 }

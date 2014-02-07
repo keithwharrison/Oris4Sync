@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System;
 
-namespace OutlookPlugin
+namespace CmisSync.Lib.Outlook
 {
     public class ConfigOverride : Config
     {
@@ -20,22 +17,6 @@ namespace OutlookPlugin
             get
             {
                 return "TemplateConsumerSecret";
-            }
-        }
-
-        public override string TestUsername
-        {
-            get
-            {
-                return "TemplateTestUsername";
-            }
-        }
-
-        public override string TestPassword
-        {
-            get
-            {
-                return "TemplateTestPassword";
             }
         }
     }

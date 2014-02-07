@@ -161,7 +161,7 @@ namespace CmisSync {
                 Content    = Header,
                 Foreground = new SolidColorBrush (Color.FromRgb (0, 51, 153)),
                 FontSize   = 16
-            };          
+            };
             TextBlock description_label = new TextBlock () {
                 Text         = Description, 
                 TextWrapping = TextWrapping.Wrap,
@@ -173,11 +173,13 @@ namespace CmisSync {
             ContentCanvas.Children.Add (header_label);
             Canvas.SetLeft (header_label, 180);
             Canvas.SetTop (header_label, 18);    
-            
-            ContentCanvas.Children.Add (description_label);
-            Canvas.SetLeft (description_label, 185);
-            Canvas.SetTop (description_label, 60);
-            
+
+            if (!string.IsNullOrWhiteSpace(Description))
+            {
+                ContentCanvas.Children.Add (description_label);
+                Canvas.SetLeft (description_label, 185);
+                Canvas.SetTop (description_label, 60);
+            }   
         
             // If there are buttons, position them.
             if (Buttons.Count > 0) {

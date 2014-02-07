@@ -25,6 +25,7 @@ using CmisSync.Lib;
 using CmisSync.Lib.Cmis;
 using log4net;
 using System.ComponentModel;
+using CmisSync.Lib.Outlook;
 
 namespace CmisSync
 {
@@ -54,6 +55,10 @@ namespace CmisSync
         /// Select name/local folder.
         /// </summary>
         Customize,
+        /// <summary>
+        /// Configure outlook.
+        /// </summary>
+        Outlook,
         /// <summary>
         /// Add complete.
         /// </summary>
@@ -624,12 +629,38 @@ namespace CmisSync
         {
             SyncingReponame = repoName;
 
+            //TODO: Check server for outlook compatibility?
+            if (OutlookService.Instance.checkForOutlookInstallation() &&
+                OutlookService.Instance.checkForProfile())
+            {
+                ChangePageEvent(PageType.Outlook);
+            }
+            else
+            {
+                Finish(localrepopath);
+            }
+        }
 
+        /// <summary>
+        /// Outlook configuration page completed.
+        /// </summary>
+        public void OutlookPageCompleted(String localrepopath)
+        {
+            //Do stuff...
+
+            Finish(localrepopath);
+        }
+
+        /// <summary>
+        /// Wizard finished: create the repository and show the finished screen.
+        /// </summary>
+        public void Finish(String localrepopath)
+        {
             // Add the remote folder to the configuration and start syncing.
             try
             {
                 Program.Controller.CreateRepository(
-                    repoName,
+                    SyncingReponame,
                     saved_address,
                     saved_user.TrimEnd(),
                     saved_password.TrimEnd(),
@@ -641,7 +672,7 @@ namespace CmisSync
             catch (Exception e)
             {
                 Logger.Fatal("Could not create repository.", e);
-                Program.Controller.ShowAlert(Properties_Resources.Error, String.Format(Properties_Resources.SyncError, repoName, e.Message));
+                Program.Controller.ShowAlert(Properties_Resources.Error, String.Format(Properties_Resources.SyncError, SyncingReponame, e.Message));
                 FinishPageCompleted();
             }
 
