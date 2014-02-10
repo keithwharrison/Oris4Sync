@@ -33,38 +33,6 @@ namespace CmisSync.Lib.Outlook
             OutlookSession outlookSession = new OutlookSession();
             Oris4RestSession restSession = new Oris4RestSession(repoUrl);
 
-
-            MAPIFolder pickedFolder = outlookSession.getFolderFromID("00000000DF515440C9C02E409C10AA4D4B9BD65582800000"); //Inbox
-
-            Logger.Info("Entry ID: " + pickedFolder.EntryID);
-            Logger.Info("Folder Name: " + pickedFolder.Name);
-            Logger.Info("Folder Path: " + pickedFolder.FolderPath);
-
-            List<Email> emailList = new List<Email>();
-
-            Items items = pickedFolder.Items;
-            foreach (object item in items)
-            {
-                if (item is MailItem)
-                {
-                    MailItem mailItem = (MailItem)item;
-                    emailList.Add(OutlookService.Instance.getEmail(pickedFolder, mailItem));
-
-                    Attachments attachments = mailItem.Attachments;
-                    if (attachments.Count > 0)
-                    {
-                        foreach (Attachment attachment in attachments)
-                        {
-                            string tempFilePath = OutlookService.Instance.saveAttachmentToTempFile(attachment);
-                            string dataHash = Utils.Sha256File(tempFilePath);
-                            Logger.InfoFormat("Attachment: {0} {1}", tempFilePath, dataHash);
-                            File.Delete(tempFilePath);
-                        }
-                    }
-                }
-            }
-
-
             restSession.login(repoInfo.User, repoInfo.Password.ToString());
 
             string defaultStoreId = outlookSession.getDefaultStoreID();
@@ -77,7 +45,42 @@ namespace CmisSync.Lib.Outlook
                 restSession.putRegisteredClient(registeredClient);
             }
 
-            List<Email> returned = restSession.insertEmail(registeredClient, "keithharrison@oris4.com", emailList);
+            string[] folderPaths = repoInfo.getOutlookFolders();
+
+            foreach (string folderPath in folderPaths)
+            {
+                MAPIFolder pickedFolder = outlookSession.getFolderByPath(folderPath);
+
+                Logger.Info("Entry ID: " + pickedFolder.EntryID);
+                Logger.Info("Folder Name: " + pickedFolder.Name);
+                Logger.Info("Folder Path: " + pickedFolder.FolderPath);
+
+                List<Email> emailList = new List<Email>();
+
+                Items items = pickedFolder.Items;
+                foreach (object item in items)
+                {
+                    if (item is MailItem)
+                    {
+                        MailItem mailItem = (MailItem)item;
+                        emailList.Add(OutlookService.Instance.getEmail(pickedFolder, mailItem));
+
+                        Attachments attachments = mailItem.Attachments;
+                        if (attachments.Count > 0)
+                        {
+                            foreach (Attachment attachment in attachments)
+                            {
+                                string tempFilePath = OutlookService.Instance.saveAttachmentToTempFile(attachment);
+                                string dataHash = Utils.Sha256File(tempFilePath);
+                                Logger.InfoFormat("Attachment: {0} {1}", tempFilePath, dataHash);
+                                File.Delete(tempFilePath);
+                            }
+                        }
+                    }
+                }
+
+                List<Email> returned = restSession.insertEmail(registeredClient, "keithharrison@oris4.com", emailList);
+            }
         }
     }
 }

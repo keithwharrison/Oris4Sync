@@ -472,6 +472,42 @@ namespace CmisSync {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enabled Outlook integration.
+        /// </summary>
+        internal static string OutlookEnable {
+            get {
+                return ResourceManager.GetString("OutlookEnable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select Outlook folders to sync from the list below....
+        /// </summary>
+        internal static string OutlookSelectFolders {
+            get {
+                return ResourceManager.GetString("OutlookSelectFolders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must select at least one folder to sync.
+        /// </summary>
+        internal static string OutlookSelectFoldersError {
+            get {
+                return ResourceManager.GetString("OutlookSelectFoldersError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sync Outlook mail with Oris4?.
+        /// </summary>
+        internal static string OutlookSyncWithOris4 {
+            get {
+                return ResourceManager.GetString("OutlookSyncWithOris4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Password.
         /// </summary>
         internal static string Password {

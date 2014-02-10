@@ -57,8 +57,9 @@ namespace CmisSync.Lib.Outlook
 
     public class OutlookFolder
     {
-        public string name { get; set; }
         public string entryId { get; set; }
+        public string name { get; set; }
+        public string folderPath { get; set; }
         private List<OutlookFolder> _children = new List<OutlookFolder>();
         public List<OutlookFolder> children { get { return _children; } }
     }

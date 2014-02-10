@@ -266,18 +266,29 @@ namespace CmisSync.Lib
             SyncConfig.Folder folder = new SyncConfig.Folder() {
                 DisplayName = repoInfo.Name,
                 LocalPath = repoInfo.TargetDirectory,
-                IgnoredFolders = new List<IgnoredFolder>(),
+                IgnoredFolders = new List<FolderPath>(),
                 RemoteUrl = repoInfo.Address,
                 RepositoryId = repoInfo.RepoID,
                 RemotePath = repoInfo.RemotePath,
                 UserName = repoInfo.User,
                 ObfuscatedPassword = repoInfo.Password.ObfuscatedPassword,
-                PollInterval = repoInfo.PollInterval
+                PollInterval = repoInfo.PollInterval,
+                OutlookEnabled = repoInfo.OutlookEnabled,
+                OutlookFolders = new List<FolderPath>(),
             };
+
+            //Ignored folders
             foreach (string ignoredFolder in repoInfo.getIgnoredPaths())
             {
-                folder.IgnoredFolders.Add(new IgnoredFolder(){Path = ignoredFolder});
+                folder.IgnoredFolders.Add(new FolderPath() { Path = ignoredFolder });
             }
+
+            //Outlook folders
+            foreach (string outlookFolder in repoInfo.getOutlookFolders())
+            {
+                folder.OutlookFolders.Add(new FolderPath() { Path = outlookFolder });
+            }
+
             this.configXml.Folders.Add(folder);
 
             Save();
@@ -372,22 +383,26 @@ namespace CmisSync.Lib
             /// </summary>
             [XmlElement("notifications")]
             public Boolean Notifications { get; set; }
+
             /// <summary>
             /// Single Repository.
             /// </summary>
             [XmlElement("singleRepository")]
             public Boolean SingleRepository { get; set; }
+
             /// <summary>
             /// Logging config.
             /// </summary>
             [XmlAnyElement("log4net")]
             public XmlNode Log4Net { get; set; }
+
             /// <summary>
             /// List of the CmisSync synchronized folders.
             /// </summary>
             [XmlArray("folders")]
             [XmlArrayItem("folder")]
             public List<SyncConfig.Folder> Folders { get; set; }
+
             /// <summary>
             /// User.
             /// </summary>
@@ -468,7 +483,19 @@ namespace CmisSync.Lib
                 /// Ingored folders.
                 /// </summary>
                 [XmlElement("ignoreFolder", IsNullable = true)]
-                public List<IgnoredFolder> IgnoredFolders { get; set; }
+                public List<FolderPath> IgnoredFolders { get; set; }
+
+                /// <summary>
+                /// Whether or not outlook is enabled.
+                /// </summary>
+                [XmlElement("outlookEnabled")]
+                public Boolean OutlookEnabled { get; set; }
+
+                /// <summary>
+                /// Outlook folders.
+                /// </summary>
+                [XmlElement("outlookFolder", IsNullable = true)]
+                public List<FolderPath> OutlookFolders { get; set; }
 
                 /// <summary>
                 /// Get all the configured info about a synchronized folder.
@@ -486,7 +513,13 @@ namespace CmisSync.Lib
                     if (PollInterval < 1) PollInterval = Config.DEFAULT_POLL_INTERVAL;
                     repoInfo.PollInterval = PollInterval;
 
-                    foreach (IgnoredFolder ignoredFolder in IgnoredFolders)
+                    repoInfo.OutlookEnabled = OutlookEnabled;
+                    foreach (FolderPath outlookFolder in OutlookFolders)
+                    {
+                        repoInfo.addOutlookFolder(outlookFolder.Path);
+                    }
+
+                    foreach (FolderPath ignoredFolder in IgnoredFolders)
                     {
                         repoInfo.addIgnorePath(ignoredFolder.Path);
                     }
@@ -496,9 +529,9 @@ namespace CmisSync.Lib
         }
 
         /// <summary>
-        /// Ignored folder.
+        /// FolderPath.
         /// </summary>
-        public class IgnoredFolder
+        public class FolderPath
         {
             /// <summary>
             /// Folder path.

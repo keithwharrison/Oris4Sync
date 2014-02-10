@@ -113,7 +113,10 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             private AutoResetEvent autoResetEvent = new AutoResetEvent(true);
 
-            private CmisSync.Lib.Outlook.OutlookSync outlookPlugin;
+            /// <summary>
+            /// Outlook sync object.
+            /// </summary>
+            private CmisSync.Lib.Outlook.OutlookSync outlookSync;
 
 
             /// <summary>
@@ -177,8 +180,10 @@ namespace CmisSync.Lib.Sync
                     }
                 );
 
-
-                outlookPlugin = new CmisSync.Lib.Outlook.OutlookSync(repoInfo);
+                if (repoInfo.OutlookEnabled)
+                {
+                    outlookSync = new CmisSync.Lib.Outlook.OutlookSync(repoInfo);
+                }
             }
 
 
@@ -293,9 +298,9 @@ namespace CmisSync.Lib.Sync
                         }
                     }
 
-                    if (syncFull)
+                    if (syncFull && outlookSync != null)
                     {
-                        outlookPlugin.Sync();
+                        outlookSync.Sync();
                     }
                 }
             }

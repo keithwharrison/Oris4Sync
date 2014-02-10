@@ -70,6 +70,7 @@ namespace CmisSync.Lib.Outlook
                 {
                     entryId = folder.EntryID,
                     name = folder.Name,
+                    folderPath = folder.FolderPath,
                 };
 
                 Folders children = folder.Folders;
@@ -79,5 +80,43 @@ namespace CmisSync.Lib.Outlook
             }
         }
 
+        public MAPIFolder getFolderByPath(string folderPath)
+        {
+            if (string.IsNullOrWhiteSpace(folderPath))
+            {
+                return null;
+            }
+
+            string[] pathElements = folderPath.Split('\\');
+            int currentElement = 0;
+            Folder currentFolder = null;
+            while (currentElement < pathElements.Length)
+            {
+                string pathElement = pathElements[currentElement];
+                Folders folders = currentFolder != null ? currentFolder.Folders : nameSpace.Folders;
+                Folder foundFolder = null;
+                foreach (Folder folder in folders)
+                {
+                    if (folder.Name.Equals(pathElement))
+                    {
+                        foundFolder = folder;
+                        break;
+                    }
+                }
+
+                if (foundFolder != null)
+                {
+                    currentFolder = foundFolder;
+                    currentElement++;
+                }
+                else 
+                {
+                    break;
+                }
+            }
+
+            return (currentFolder != null && folderPath.Equals(currentFolder.FolderPath)) ?
+                currentFolder : null;
+        }
     }
 }

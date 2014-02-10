@@ -52,6 +52,8 @@ namespace CmisSync
 
         delegate void CheckRepoPathAndNameDelegate();
 
+        delegate List<OutlookFolder> GetOutlookFolderTreeDelegate();
+
         private EventHandler windowActivatedEventHandler = null;
 
         /// <summary>
@@ -169,196 +171,6 @@ namespace CmisSync
 
                                 Controller.CheckSetupPage();
 
-                                break;
-                            }
-                        #endregion
-
-                        #region Page Tutorial
-                        case PageType.Tutorial:
-                            {
-                                switch (Controller.TutorialCurrentPage)
-                                {
-                                    // First page of the tutorial.
-                                    case 1:
-                                        {
-                                            // UI elements.
-
-                                            Header = Properties_Resources.WhatsNext;
-                                            Description = Properties_Resources.CmisSyncCreates;
-
-                                            WPF.Image slide_image = new WPF.Image()
-                                            {
-                                                Width = 350,
-                                                Height = 200
-                                            };
-
-                                            slide_image.Source = UIHelpers.GetImageSource("tutorial-slide-1");
-
-                                            Button skip_tutorial_button = new Button()
-                                            {
-                                                Content = Properties_Resources.SkipTutorial
-                                            };
-
-                                            Button continue_button = new Button()
-                                            {
-                                                Content = Properties_Resources.Continue
-                                            };
-
-
-                                            ContentCanvas.Children.Add(slide_image);
-                                            Canvas.SetLeft(slide_image, 215);
-                                            Canvas.SetTop(slide_image, 130);
-
-                                            Buttons.Add(continue_button);
-                                            Buttons.Add(skip_tutorial_button);
-
-                                            // Actions.
-
-                                            skip_tutorial_button.Click += delegate
-                                            {
-                                                Controller.TutorialSkipped();
-                                            };
-
-                                            continue_button.Click += delegate
-                                            {
-                                                Controller.TutorialPageCompleted();
-                                            };
-
-                                            break;
-                                        }
-
-                                    // Second page of the tutorial.
-                                    case 2:
-                                        {
-                                            // UI elements.
-
-                                            Header = Properties_Resources.Synchronization;
-                                            Description = Properties_Resources.DocumentsAre;
-
-
-                                            Button continue_button = new Button()
-                                            {
-                                                Content = Properties_Resources.Continue
-                                            };
-
-                                            WPF.Image slide_image = new WPF.Image()
-                                            {
-                                                Width = 350,
-                                                Height = 200
-                                            };
-
-                                            slide_image.Source = UIHelpers.GetImageSource("tutorial-slide-2");
-
-
-                                            ContentCanvas.Children.Add(slide_image);
-                                            Canvas.SetLeft(slide_image, 215);
-                                            Canvas.SetTop(slide_image, 130);
-
-                                            Buttons.Add(continue_button);
-
-                                            // Actions.
-
-                                            continue_button.Click += delegate
-                                            {
-                                                Controller.TutorialPageCompleted();
-                                            };
-
-                                            break;
-                                        }
-
-                                    // Third page of the tutorial.
-                                    case 3:
-                                        {
-                                            // UI elements.
-
-                                            Header = Properties_Resources.StatusIcon;
-                                            Description = Properties_Resources.StatusIconShows;
-
-
-                                            Button continue_button = new Button()
-                                            {
-                                                Content = Properties_Resources.Continue
-                                            };
-
-                                            WPF.Image slide_image = new WPF.Image()
-                                            {
-                                                Width = 350,
-                                                Height = 200
-                                            };
-
-                                            slide_image.Source = UIHelpers.GetImageSource("tutorial-slide-3");
-
-
-                                            ContentCanvas.Children.Add(slide_image);
-                                            Canvas.SetLeft(slide_image, 215);
-                                            Canvas.SetTop(slide_image, 130);
-
-                                            Buttons.Add(continue_button);
-
-                                            // Actions.
-
-                                            continue_button.Click += delegate
-                                            {
-                                                Controller.TutorialPageCompleted();
-                                            };
-
-                                            break;
-                                        }
-
-                                    // Fourth page of the tutorial.
-                                    case 4:
-                                        {
-                                            // UI elements.
-
-                                            Header = Properties_Resources.AddFolders;
-                                            Description = Properties_Resources.YouCan;
-
-
-                                            Button finish_button = new Button()
-                                            {
-                                                Content = Properties_Resources.Finish
-                                            };
-
-                                            WPF.Image slide_image = new WPF.Image()
-                                            {
-                                                Width = 350,
-                                                Height = 200
-                                            };
-
-                                            slide_image.Source = UIHelpers.GetImageSource("tutorial-slide-4");
-
-                                            CheckBox check_box = new CheckBox()
-                                            {
-                                                Content = Properties_Resources.Startup,
-                                                IsChecked = true
-                                            };
-
-
-                                            ContentCanvas.Children.Add(slide_image);
-                                            Canvas.SetLeft(slide_image, 215);
-                                            Canvas.SetTop(slide_image, 130);
-
-                                            ContentCanvas.Children.Add(check_box);
-                                            Canvas.SetLeft(check_box, 185);
-                                            Canvas.SetBottom(check_box, 12);
-
-                                            Buttons.Add(finish_button);
-
-                                            // Actions.
-
-                                            check_box.Click += delegate
-                                            {
-                                                Controller.StartupItemChanged(check_box.IsChecked.Value);
-                                            };
-
-                                            finish_button.Click += delegate
-                                            {
-                                                Controller.TutorialPageCompleted();
-                                            };
-
-                                            break;
-                                        }
-                                }
                                 break;
                             }
                         #endregion
@@ -584,7 +396,7 @@ namespace CmisSync
 
                                     // Try to find the CMIS server (asynchronously)
                                     GetRepositoriesFuzzyDelegate dlgt =
-                                        new GetRepositoriesFuzzyDelegate(CmisUtils.GetRepositoriesFuzzy);
+                                        new GetRepositoriesFuzzyDelegate(CmisUtils.GetRepositoriesFuzzy); //TODO:: Check for outlook capabilities here.
                                     IAsyncResult ar = dlgt.BeginInvoke(new Uri(address_box.Text), user_box.Text,
                                         password_box.Password, null, null);
                                     while (!ar.AsyncWaitHandle.WaitOne(100))
@@ -783,15 +595,8 @@ namespace CmisSync
                                     TextWrapping = TextWrapping.Wrap,
                                     Width = 420
                                 };
-                                string localfoldername = ""; //Controller.saved_address.Host.ToString();
-                                foreach (KeyValuePair<String, String> repository in Controller.repositories)
-                                {
-                                    if (repository.Key == Controller.saved_repository)
-                                    {
-                                        localfoldername = repository.Value;
-                                        break;
-                                    }
-                                }
+
+                                string localfoldername = Controller.getSelectedRepositoryDefaultName();
                                 TextBox localfolder_box = new TextBox()
                                 {
                                     Width = 420,
@@ -831,7 +636,7 @@ namespace CmisSync
 
                                 Button add_button = new Button()
                                 {
-                                    Content = Properties_Resources.Add,
+                                    Content = Properties_Resources.Continue,
                                     IsDefault = true
                                 };
 
@@ -965,26 +770,34 @@ namespace CmisSync
                             {
                                 // UI elements.
 
-                                Header = "Sync Outlook mail with Oris4?";//Properties_Resources.OutlookSync;
+                                Header = Properties_Resources.OutlookSyncWithOris4;
                                 
 
                                 CheckBox outlookCheckbox = new CheckBox()
                                 {
-                                    Content = "Enable Outlook Integration",//Properties_Resources.OutlookEnabled,
+                                    Content = Properties_Resources.OutlookEnable,
                                     IsChecked = false,
                                 };
 
                                 TextBlock outlookTreeViewLabel = new TextBlock()
                                 {
-                                    Text = "Select outlook folders to sync from the list below...",//Properties_Resources.SelectOutlookFolders,
+                                    Text = Properties_Resources.OutlookSelectFolders,
                                     Visibility = Visibility.Hidden,
                                 };
                                 
                                 TreeView outlookTreeView = new TreeView()
                                 {
-                                    Height = 240,
                                     Width = 420,
+                                    Height = 225,
                                     Visibility = Visibility.Hidden,
+                                };
+
+                                TextBlock outlookTreeViewErrorLabel = new TextBlock()
+                                {
+                                    FontSize = 11,
+                                    Foreground = new SolidColorBrush(Color.FromRgb(255, 128, 128)),
+                                    Visibility = Visibility.Hidden,
+                                    TextWrapping = TextWrapping.Wrap
                                 };
 
                                 Button cancel_button = new Button()
@@ -994,13 +807,13 @@ namespace CmisSync
 
                                 Button continue_button = new Button()
                                 {
-                                    Content = CmisSync.Properties_Resources.ResourceManager.GetString("Continue", CultureInfo.CurrentCulture)
+                                    Content = CmisSync.Properties_Resources.Continue,
+                                    IsDefault = true
                                 };
 
                                 Button back_button = new Button()
                                 {
                                     Content = Properties_Resources.Back,
-                                    IsDefault = false
                                 };
 
                                 Buttons.Add(back_button);
@@ -1020,6 +833,10 @@ namespace CmisSync
                                 Canvas.SetTop(outlookTreeView, 110);
                                 Canvas.SetLeft(outlookTreeView, 185);
 
+                                ContentCanvas.Children.Add(outlookTreeViewErrorLabel);
+                                Canvas.SetTop(outlookTreeViewErrorLabel, 340);
+                                Canvas.SetLeft(outlookTreeViewErrorLabel, 185);
+
                                 outlookCheckbox.Focus();
 
                                 outlookCheckbox.Click += delegate
@@ -1027,12 +844,27 @@ namespace CmisSync
                                     if (outlookCheckbox.IsChecked.Value && outlookTreeView.Items.Count <= 0)
                                     {
                                         //Populate tree...
-                                        OutlookSession outlookSession = new OutlookSession();
-                                        List<OutlookFolder> root = outlookSession.getFolderTree();
-                                        populateTreeView(outlookTreeView.Items, root);
+
+                                        // Show wait cursor
+                                        System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.WaitCursor;
+
+                                        // Get outlook folders (asynchronously)
+                                        GetOutlookFolderTreeDelegate outlookFolderTreeDelegate =
+                                            new GetOutlookFolderTreeDelegate(getOutlookFolderTree);
+                                        IAsyncResult asyncResult = outlookFolderTreeDelegate.BeginInvoke(null, null);
+                                        while (!asyncResult.AsyncWaitHandle.WaitOne()) //TODO: Do we want a timeout here or wait indefinately
+                                        {
+                                            System.Windows.Forms.Application.DoEvents();
+                                        }
+                                        List<OutlookFolder> outlookFolderTree = outlookFolderTreeDelegate.EndInvoke(asyncResult);
+                                        populateOutlookTreeView(outlookTreeView.Items, outlookFolderTree);
+                                        
+                                        // Hide wait cursor
+                                        System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default;
                                     }
                                     outlookTreeViewLabel.Visibility = outlookCheckbox.IsChecked.Value ? Visibility.Visible : Visibility.Hidden;
                                     outlookTreeView.Visibility = outlookCheckbox.IsChecked.Value ? Visibility.Visible : Visibility.Hidden;
+                                    outlookTreeViewErrorLabel.Visibility = Visibility.Hidden;
                                 };
 
                                 cancel_button.Click += delegate
@@ -1042,12 +874,31 @@ namespace CmisSync
 
                                 continue_button.Click += delegate
                                 {
-                                    Controller.OutlookPageCompleted(Controller.saved_remote_path);
+                                    outlookTreeViewErrorLabel.Visibility = Visibility.Hidden;
+                                    bool outlookEnabled = outlookCheckbox.IsChecked.Value;
+                                    if (outlookEnabled)
+                                    {
+                                        List<string> outlookFolders = new List<string>();
+                                        getSelectedOutlookFolders(outlookTreeView.Items, outlookFolders);
+                                        if (outlookFolders.Count > 0)
+                                        {
+                                            Controller.OutlookPageCompleted(true, outlookFolders);
+                                        }
+                                        else
+                                        {
+                                            outlookTreeViewErrorLabel.Text = Properties_Resources.OutlookSelectFoldersError;
+                                            outlookTreeViewErrorLabel.Visibility = Visibility.Visible;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Controller.OutlookPageCompleted(false, null);
+                                    }
                                 };
 
                                 back_button.Click += delegate
                                 {
-                                    //Controller.BackToCustomize();
+                                    Controller.BackToCustomize();
                                 };
                                 break;
                             }
@@ -1355,20 +1206,64 @@ namespace CmisSync
             Logger.Debug("Exiting constructor.");
         }
 
-        private void populateTreeView(ItemCollection treeViewItems, List<OutlookFolder> folderTree)
+        private static List<OutlookFolder> getOutlookFolderTree()
+        {
+            OutlookSession outlookSession = new OutlookSession();
+            return outlookSession.getFolderTree();
+        }
+
+        private static void populateOutlookTreeView(ItemCollection treeViewItems, List<OutlookFolder> folderTree)
         {
             foreach(OutlookFolder outlookFolder in folderTree)
             {
+                CheckBox checkBox = new CheckBox()
+                {
+                     Content = outlookFolder.name,
+                };
+
                 TreeViewItem treeViewItem = new TreeViewItem()
                 {
-                    Tag = outlookFolder,
-                    Header = new CheckBox()
-                    {
-                        Content = outlookFolder.name,
-                    },
+                    Tag = outlookFolder.folderPath,
+                    Header = checkBox,
+                    IsExpanded = true,
                 };
-                populateTreeView(treeViewItem.Items, outlookFolder.children);
+
+                checkBox.Click += delegate
+                {
+                    checkOutlookTreeViewItems(treeViewItem.Items, checkBox.IsChecked.Value);
+                };
+
+                populateOutlookTreeView(treeViewItem.Items, outlookFolder.children);
                 treeViewItems.Add(treeViewItem); 
+            }
+        }
+
+        private static void checkOutlookTreeViewItems(ItemCollection treeViewItems, bool isChecked)
+        {
+            foreach (object treeViewItemObject in treeViewItems)
+            {
+                TreeViewItem treeViewItem = (TreeViewItem)treeViewItemObject;
+                CheckBox checkBox = (CheckBox)treeViewItem.Header;
+                checkBox.IsChecked = isChecked;
+                 
+                //Recursive...
+                checkOutlookTreeViewItems(treeViewItem.Items, isChecked);
+            }
+        }
+
+        private static void getSelectedOutlookFolders(ItemCollection treeViewItems, List<string> outlookFolders)
+        {
+            foreach (object treeViewItemObject in treeViewItems)
+            {
+                TreeViewItem treeViewItem = (TreeViewItem)treeViewItemObject;
+                CheckBox checkBox = (CheckBox)treeViewItem.Header;
+                if (checkBox.IsChecked.Value)
+                {
+                    outlookFolders.Add((string)treeViewItem.Tag);
+                }
+
+                //Recursive...
+                getSelectedOutlookFolders(treeViewItem.Items, outlookFolders);
             }
         }
 

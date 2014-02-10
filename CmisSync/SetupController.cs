@@ -64,10 +64,6 @@ namespace CmisSync
         /// </summary>
         Finished,
         /// <summary>
-        /// Tutorial - contains sub-steps that are tracked via a number.
-        /// </summary>
-        Tutorial,
-        /// <summary>
         /// Settings page.
         /// </summary>
         Settings,
@@ -75,7 +71,6 @@ namespace CmisSync
 
     /// <summary>
     /// MVC controller for the two wizards:
-    /// - CmisSync tutorial that appears at firt run,
     /// - wizard to add a new remote folder.
     /// </summary>
     public class SetupController
@@ -89,6 +84,7 @@ namespace CmisSync
         /// Show window event.
         /// </summary>
         public event Action ShowWindowEvent = delegate { };
+        
         /// <summary>
         /// Hide window event.
         /// </summary>
@@ -98,24 +94,17 @@ namespace CmisSync
         /// Change page event.
         /// </summary>
         public event ChangePageEventHandler ChangePageEvent = delegate { };
+        
         /// <summary>
         /// Change page event.
         /// </summary>
         public delegate void ChangePageEventHandler(PageType page);
 
         /// <summary>
-        /// Update progress bar event.
-        /// </summary>
-        public event UpdateProgressBarEventHandler UpdateProgressBarEvent = delegate { };
-        /// <summary>
-        /// Update progress bar event.
-        /// </summary>
-        public delegate void UpdateProgressBarEventHandler(double percentage);
-
-        /// <summary>
         /// Update setup continue button.
         /// </summary>
         public event UpdateSetupContinueButtonEventHandler UpdateSetupContinueButtonEvent = delegate { };
+
         /// <summary>
         /// Update setup continue button.
         /// </summary>
@@ -125,6 +114,7 @@ namespace CmisSync
         /// Update add project button event.
         /// </summary>
         public event UpdateAddProjectButtonEventHandler UpdateAddProjectButtonEvent = delegate { };
+
         /// <summary>
         /// Update add project button event.
         /// </summary>
@@ -134,6 +124,7 @@ namespace CmisSync
         /// Change address field event.
         /// </summary>
         public event ChangeAddressFieldEventHandler ChangeAddressFieldEvent = delegate { };
+        
         /// <summary>
         /// Change address field event.
         /// </summary>
@@ -181,11 +172,6 @@ namespace CmisSync
         public bool WindowIsOpen { get; private set; }
 
         /// <summary>
-        /// Current step of the tutorial.
-        /// </summary>
-        public int TutorialCurrentPage { get; private set; }
-
-        /// <summary>
         /// Current step of the remote folder addition wizard.
         /// </summary>
         private PageType FolderAdditionWizardCurrentPage;
@@ -194,22 +180,27 @@ namespace CmisSync
         /// Previous address.
         /// </summary>
         public Uri PreviousAddress { get; private set; }
+
         /// <summary>
         /// Event.
         /// </summary>
         public string PreviousPath { get; private set; }
+
         /// <summary>
         /// Previous repository.
         /// </summary>
         public string PreviousRepository { get; private set; }
+
         /// <summary>
         /// Syncing repository name.
         /// </summary>
         public string SyncingReponame { get; private set; }
+
         /// <summary>
         /// Default repository path..
         /// </summary>
         public string DefaultRepoPath { get; private set; }
+
         /// <summary>
         /// Progress bar percentage.
         /// </summary>
@@ -219,26 +210,37 @@ namespace CmisSync
         /// Saved address.
         /// </summary>
         public Uri saved_address = null;
+
         /// <summary>
         /// Saved remote path.
         /// </summary>
         public string saved_remote_path = "";
+
         /// <summary>
         /// Saved user.
         /// </summary>
         public string saved_user = "";
+
         /// <summary>
         /// Saved password.
         /// </summary>
         public string saved_password = "";
+
         /// <summary>
         /// Saved repository.
         /// </summary>
         public string saved_repository = "";
+
+        /// <summary>
+        /// Saved local repository directory.
+        /// </summary>
+        public string saved_local_path = "";
+
         /// <summary>
         /// Saved sync interval.
         /// </summary>
         public int saved_sync_interval = 15;
+
         /// <summary>
         /// Ignored paths.
         /// </summary>
@@ -254,6 +256,15 @@ namespace CmisSync
         /// </summary>
         private bool create_startup_item = true;
 
+        /// <summary>
+        /// Whether or not outlook is inabled.
+        /// </summary>
+        public bool outlook_enabled = false;
+
+        /// <summary>
+        /// Selected outlook folders.
+        /// </summary>
+        public List<string> outlook_folders;
 
         /// <summary>
         /// Load repositories information from a CMIS endpoint.
@@ -314,7 +325,6 @@ namespace CmisSync
         {
             Logger.Debug("Entering constructor.");
 
-            TutorialCurrentPage = 0;
             PreviousAddress = null;
             PreviousPath = "";
             SyncingReponame = "";
@@ -349,7 +359,7 @@ namespace CmisSync
                         ShowWindowEvent();
 
                     }
-                    else if (TutorialCurrentPage == 0)
+                    else
                     {
                         WindowIsOpen = true;
                         ChangePageEvent(PageType.Add1);
@@ -409,44 +419,6 @@ namespace CmisSync
                 new Thread(() => Program.Controller.CreateStartupItem()).Start();
 
             ChangePageEvent(PageType.Add1);
-        }
-
-
-        /// <summary>
-        /// Tutorial has been skipped, go to last step of wizard.
-        /// </summary>
-        public void TutorialSkipped()
-        {
-            TutorialCurrentPage = 4;
-            ChangePageEvent(PageType.Tutorial);
-        }
-
-
-        /// <summary>
-        /// Go to next step of the tutorial.
-        /// </summary>
-        public void TutorialPageCompleted()
-        {
-            TutorialCurrentPage++;
-
-            // If last page reached, close tutorial.
-            if (TutorialCurrentPage == 5)
-            {
-                TutorialCurrentPage = 0;
-                this.FolderAdditionWizardCurrentPage = PageType.None;
-
-                WindowIsOpen = false;
-                HideWindowEvent();
-
-                // If requested, add CmisSync to the list of programs to be started up when the user logs into Windows.
-                if (this.create_startup_item)
-                    new Thread(() => Program.Controller.CreateStartupItem()).Start();
-            }
-            else
-            {
-                // Go to next step of tutorial.
-                ChangePageEvent(PageType.Tutorial);
-            }
         }
 
 
@@ -536,6 +508,22 @@ namespace CmisSync
             return String.Empty;
         }
 
+        /// <summary>
+        /// Return the default name of the selected repository.
+        /// </summary>
+        public string getSelectedRepositoryDefaultName()
+        {
+            string localfoldername = ""; 
+            foreach (KeyValuePair<String, String> repository in repositories)
+            {
+                if (repository.Key == saved_repository)
+                {
+                    localfoldername = repository.Value;
+                    break;
+                }
+            }
+            return /*Controller.saved_address.Host.ToString() + "\\" + */localfoldername;
+        }
 
         /// <summary>
         /// First step of remote folder addition wizard is complete, switch to second step
@@ -621,6 +609,15 @@ namespace CmisSync
             Add2PageCompleted(repository, remote_path, new string[] { }, new string[] { });
         }
 
+        /// <summary>
+        /// Determine if outlook integration is available.
+        /// </summary>
+        public bool isOutlookIntegrationAvailable()
+        {
+            //TODO: Check server outlook compatibility?
+            return OutlookService.Instance.checkForOutlookInstallation() &&
+                OutlookService.Instance.checkForProfile();
+        }
 
         /// <summary>
         /// Customization step of remote folder addition wizard is complete, start CmisSync.
@@ -628,33 +625,33 @@ namespace CmisSync
         public void CustomizePageCompleted(String repoName, String localrepopath)
         {
             SyncingReponame = repoName;
+            saved_local_path = localrepopath;
 
-            //TODO: Check server for outlook compatibility?
-            if (OutlookService.Instance.checkForOutlookInstallation() &&
-                OutlookService.Instance.checkForProfile())
+            if (isOutlookIntegrationAvailable())
             {
                 ChangePageEvent(PageType.Outlook);
             }
             else
             {
-                Finish(localrepopath);
+                Finish();
             }
         }
 
         /// <summary>
         /// Outlook configuration page completed.
         /// </summary>
-        public void OutlookPageCompleted(String localrepopath)
+        public void OutlookPageCompleted(bool outlookEnabled, List<string> outlookFolders)
         {
-            //Do stuff...
+            this.outlook_enabled = outlookEnabled;
+            this.outlook_folders = outlookFolders;
 
-            Finish(localrepopath);
+            Finish();
         }
 
         /// <summary>
         /// Wizard finished: create the repository and show the finished screen.
         /// </summary>
-        public void Finish(String localrepopath)
+        public void Finish()
         {
             // Add the remote folder to the configuration and start syncing.
             try
@@ -666,8 +663,10 @@ namespace CmisSync
                     saved_password.TrimEnd(),
                     PreviousRepository,
                     PreviousPath,
-                    localrepopath,
-                    ignoredPaths);
+                    saved_local_path,
+                    ignoredPaths,
+                    outlook_enabled,
+                    outlook_folders);
             }
             catch (Exception e)
             {
@@ -694,6 +693,23 @@ namespace CmisSync
             else
             {
                 ChangePageEvent(PageType.Add2);
+            }
+        }
+
+        /// <summary>
+        /// Switch back from outlook to customize page.
+        /// </summary>
+        public void BackToCustomize()
+        {
+            string defaultRepoName = getSelectedRepositoryDefaultName();
+            if (SyncingReponame.Equals(defaultRepoName) &&
+                saved_local_path.Equals(Path.Combine(DefaultRepoPath, defaultRepoName))) 
+            {
+                BackToPage2();
+            }
+            else
+            {
+                ChangePageEvent(PageType.Customize);
             }
         }
 

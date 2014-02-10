@@ -80,6 +80,16 @@ namespace CmisSync.Lib
         private List<string> ignoredPaths = new List<string>();
 
         /// <summary>
+        /// Determine whether outlook is enabled.
+        /// </summary>
+        public bool OutlookEnabled { get; set; }
+
+        /// <summary>
+        /// All outlook folders which should be included on synchronization.
+        /// </summary>
+        private List<string> outlookFolders = new List<string>();
+
+        /// <summary>
         /// Simple constructor.
         /// </summary>
         public RepoInfo(string name, string cmisDatabaseFolder)
@@ -107,6 +117,7 @@ namespace CmisSync.Lib
             RepoID = repoID;
             TargetDirectory = Path.Combine(ConfigManager.CurrentConfig.FoldersPath, name);
             PollInterval = pollInterval;
+            OutlookEnabled = false;
         }
 
         /// <summary>
@@ -140,6 +151,25 @@ namespace CmisSync.Lib
         public bool isPathIgnored(string path)
         {
             return ignoredPaths.Contains(path);
+        }
+
+        /// <summary>
+        /// Adds a new outlook folder path.
+        /// </summary>
+        /// <param name="path"></param>
+        public void addOutlookFolder(string path)
+        {
+            if (!this.outlookFolders.Contains(path))
+                this.outlookFolders.Add(path);
+        }
+
+        /// <summary>
+        /// Get array of outlook folders.
+        /// </summary>
+        /// <returns>all ignored folders</returns>
+        public string[] getOutlookFolders()
+        {
+            return outlookFolders.ToArray();
         }
     }
 }

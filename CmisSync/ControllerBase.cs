@@ -460,7 +460,7 @@ namespace CmisSync
         /// Create a new CmisSync synchronized folder.
         /// </summary>
         public void CreateRepository(string name, Uri address, string user, string password, string repository, string remote_path, string local_path,
-            List<string> ignoredPaths)
+            List<string> ignoredPaths, bool outlookEnabled, List<string> outlookFolders)
         {
             repoInfo = new RepoInfo(name, ConfigManager.CurrentConfig.ConfigPath);
             repoInfo.Address = address;
@@ -470,8 +470,20 @@ namespace CmisSync
             repoInfo.RemotePath = remote_path;
             repoInfo.TargetDirectory = local_path;
             repoInfo.PollInterval = Config.DEFAULT_POLL_INTERVAL;
+            repoInfo.OutlookEnabled = outlookEnabled;
+
+            if (outlookFolders != null)
+            {
+                foreach (string outlookFolder in outlookFolders)
+                {
+                    repoInfo.addOutlookFolder(outlookFolder);
+                }
+            }
+
             foreach (string ignore in ignoredPaths)
+            {
                 repoInfo.addIgnorePath(ignore);
+            }
 
             // Check that the CmisSync root folder exists.
             if (!Directory.Exists(ConfigManager.CurrentConfig.FoldersPath))

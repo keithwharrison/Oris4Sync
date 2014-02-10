@@ -378,20 +378,6 @@ namespace CmisSync
                 Controller.QuitClicked();
             };
             this.traymenu.Items.Add(this.exitItem);
-
-
-
-            // Test
-            ToolStripMenuItem test = new ToolStripMenuItem()
-            {
-                Text = "Test",
-                Name = "test",
-            };
-            test.Click += delegate
-            {
-                Program.Controller.ShowSetupWindow(PageType.Outlook);
-            };
-            this.traymenu.Items.Add(test);
         }
 
 
