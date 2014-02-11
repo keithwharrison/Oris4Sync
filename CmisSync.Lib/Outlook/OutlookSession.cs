@@ -45,6 +45,11 @@ namespace CmisSync.Lib.Outlook
             defaultFolder = nameSpace.GetDefaultFolder(OlDefaultFolders.olFolderInbox);
         }
 
+        public void sendAndRecieve()
+        {
+            OutlookService.Instance.sendAndRecieve(nameSpace);
+        }
+
         public MAPIFolder getFolderFromID(string entryID)
         {
             return nameSpace.GetFolderFromID(entryID);
@@ -52,7 +57,7 @@ namespace CmisSync.Lib.Outlook
 
         public string getDefaultStoreID()
         {
-            return nameSpace.DefaultStore.StoreID;
+            return Utils.Sha256Data(nameSpace.DefaultStore.StoreID);
         }
 
         public List<OutlookFolder> getFolderTree()
@@ -118,6 +123,21 @@ namespace CmisSync.Lib.Outlook
 
             return (currentFolder != null && folderPath.Equals(currentFolder.FolderPath)) ?
                 currentFolder : null;
+        }
+
+        public Email getEmail(MAPIFolder folder, MailItem mailItem)
+        {
+            return OutlookService.Instance.getEmail(folder, mailItem);
+        }
+        
+        public List<EmailAttachment> getEmailAttachments(MailItem mailItem, Email email)
+        {
+            return OutlookService.Instance.getEmailAttachments(mailItem, email);
+        }
+
+        public EmailAttachment getEmailAttachment(Attachment attachment, Email email)
+        {
+            return OutlookService.Instance.getEmailAttachment(attachment, email);
         }
     }
 }

@@ -92,7 +92,7 @@ namespace CmisSync.Lib.Outlook
 
         public List<Email> listEmail(RestClient client, int folderKey, int offset, int pageSize)
         {
-            RestRequest request = new RestRequest(URI_EMAIL_GET, Method.GET);
+            RestRequest request = new RestRequest(URI_EMAIL_LIST_GET, Method.GET);
 
             request.AddParameter("folderKey", folderKey.ToString());
             request.AddParameter("offset", offset.ToString());
@@ -150,15 +150,12 @@ namespace CmisSync.Lib.Outlook
             Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse<List<Email>> response = client.Execute<List<Email>>(request);
 
-            checkResponseStatus(response, new List<HttpStatusCode>() { HttpStatusCode.Created, HttpStatusCode.NoContent, HttpStatusCode.ExpectationFailed });
+            checkResponseStatus(response, new List<HttpStatusCode>() { HttpStatusCode.OK, HttpStatusCode.ExpectationFailed });
 
             switch (response.StatusCode)
             {
-                case HttpStatusCode.Created:
+                case HttpStatusCode.OK:
                     Logger.Info("Emails were created...");
-                    break;
-                case HttpStatusCode.NoContent:
-                    Logger.Info("No emails created...");
                     break;
                 case HttpStatusCode.ExpectationFailed:
                     Logger.Info("Some emails created...");
@@ -168,17 +165,21 @@ namespace CmisSync.Lib.Outlook
             return response.Data;
         }
 
-        public string insertAttachment(RestClient client, string accountId, string emailAddress, EmailAttachment emailAttachment,
-            byte[] data, string contentType)
+        public string insertAttachment(RestClient client, string accountId, string emailAddress, EmailAttachment emailAttachment, byte[] data)
         {
-            RestRequest request = new RestRequest(URI_EMAIL_POST, Method.POST);
+            RestRequest request = new RestRequest(URI_EMAIL_ATTACHMENT_POST, Method.POST);
             request.AddHeader("Client-GUID", accountId);
             request.AddHeader("Email-Address", emailAddress);
 
-            request.RequestFormat = DataFormat.Json;
-            request.AddBody(emailAttachment);
+            request.AddParameter("jsonEmailAttachment", request.JsonSerializer.Serialize(new JsonEmailAttachment() { 
+                dataHash = emailAttachment.dataHash,
+                emailDatahash = emailAttachment.emailDataHash,
+                fileName = emailAttachment.fileName,
+                fileSize = emailAttachment.fileSize,
+                name = emailAttachment.fileName,
+            }));
 
-            request.AddFile("data", data, emailAttachment.fileName, contentType);
+            request.AddFile("data", data, emailAttachment.fileName);
 
             Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse response = client.Execute(request);
@@ -188,7 +189,7 @@ namespace CmisSync.Lib.Outlook
             switch (response.StatusCode)
             {
                 case HttpStatusCode.OK:
-                    Logger.Info("Attachment not created?");
+                    Logger.Info("Attachment already exists.");
                     break;
                 case HttpStatusCode.Created:
                     Logger.Info("Attachment created.");
@@ -210,9 +211,9 @@ namespace CmisSync.Lib.Outlook
 
         private void checkResponseStatus(IRestResponse restResponse, List<HttpStatusCode> expectedStatus)
         {
-            Logger.DebugFormat("StatusCode: {0} {1}", restResponse.StatusCode, restResponse.StatusDescription);
-            Logger.DebugFormat("ResponseStatus: {0}", restResponse.ResponseStatus);
-            Logger.DebugFormat("Content: {0}", restResponse.Content);
+            //Logger.DebugFormat("StatusCode: {0} {1}", restResponse.StatusCode, restResponse.StatusDescription);
+            //Logger.DebugFormat("ResponseStatus: {0}", restResponse.ResponseStatus);
+            //Logger.DebugFormat("Content: {0}", restResponse.Content);
 
             if (expectedStatus.Contains(restResponse.StatusCode))
             {

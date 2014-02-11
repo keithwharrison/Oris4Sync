@@ -123,14 +123,31 @@ namespace CmisSync.Lib.Outlook
             return email;
         }
 
-        public EmailAttachment getEmailAttachment(Attachment attachment, string emailDataHash, string dataHash)
+        public List<EmailAttachment> getEmailAttachments(MailItem mailItem, Email email)
         {
+            List<EmailAttachment> emailAttachments = new List<EmailAttachment>();
+            Attachments attachments = mailItem.Attachments;
+            foreach (Attachment attachment in attachments)
+            {
+                emailAttachments.Add(getEmailAttachment(attachment, email));
+            }
+            return emailAttachments;
+        }
+
+        public EmailAttachment getEmailAttachment(Attachment attachment, Email email)
+        {
+            string tempFilePath = saveAttachmentToTempFile(attachment);
+            string dataHash = Utils.Md5File(tempFilePath);
+            Logger.DebugFormat("Attachment: {0} {1}", tempFilePath, dataHash);
+
             return new EmailAttachment()
             {
-                emailDataHash = emailDataHash,
+                emailDataHash = email.dataHash,
                 dataHash = dataHash,
                 fileName = attachment.DisplayName,
                 fileSize = attachment.Size,
+                folderPath = email.folderPath,
+                tempFilePath = tempFilePath,
             };
         }
 
@@ -144,7 +161,7 @@ namespace CmisSync.Lib.Outlook
         private string getMessageId(MailItem mailItem)
         {
             PropertyAccessor propertyAccessor = mailItem.PropertyAccessor;
-            return (string)propertyAccessor.GetProperty(OutlookService.PR_INTERNET_MESSAGE_ID_W)+"test";
+            return (string)propertyAccessor.GetProperty(OutlookService.PR_INTERNET_MESSAGE_ID_W);
         }
 
         private string getInReplyTo(MailItem mailItem)

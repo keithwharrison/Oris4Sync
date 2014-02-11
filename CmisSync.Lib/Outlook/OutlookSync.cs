@@ -6,86 +6,290 @@ using System.IO;
 
 namespace CmisSync.Lib.Outlook
 {
-    public class OutlookSync
+    /// <summary>
+    /// Outlook Syncronization plugin.
+    /// </summary>
+    public class OutlookSync : IDisposable
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(OutlookSync));
 
+        private static readonly int EMAIL_BATCH_SIZE = 50;
+
+        /// <summary>
+        /// Track whether <c>Dispose</c> has been called.
+        /// </summary>
+        private bool disposed = false;
+
+        /// <summary>
+        /// Repository info.
+        /// </summary>
         private RepoInfo repoInfo;
+
+        /// <summary>
+        /// Database object.
+        /// </summary>
         private OutlookDatabase outlookDatabase;
+        
+        /// <summary>
+        /// Repository URL.
+        /// </summary>
         private string repoUrl;
 
-        public OutlookSync(RepoInfo repoInfo)
+        /// <summary>
+        /// Sleep while suspended method handles repo pause and repo cancel actions.
+        /// </summary>
+        public delegate void SleepWhileSuspendedDelegate();
+        private event SleepWhileSuspendedDelegate SleepWhileSuspended;
+
+        /// <summary>
+        /// Sleep while suspended method handles repo pause and repo cancel actions.
+        /// </summary>
+        public delegate void ProcessRecoverableExceptionDelegate(string logMessage, System.Exception exception);
+        private event ProcessRecoverableExceptionDelegate ProcessRecoverableException;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public OutlookSync(RepoInfo repoInfo, SleepWhileSuspendedDelegate SleepWhileSuspended,
+            ProcessRecoverableExceptionDelegate ProcessRecoverableException)
         {
             this.repoInfo = repoInfo;
+
+            this.SleepWhileSuspended = SleepWhileSuspended;
+            this.ProcessRecoverableException = ProcessRecoverableException;
 
             //Database
             string dataPath = repoInfo.CmisDatabase;
             this.outlookDatabase = new OutlookDatabase(Path.Combine(Path.GetDirectoryName(dataPath),
-                Path.GetFileNameWithoutExtension(dataPath) + " (outlook plugin)" +
+                Path.GetFileNameWithoutExtension(dataPath) + " (outlook)" +
                 Path.GetExtension(dataPath)));
 
             //Url
             repoUrl = repoInfo.Address.GetLeftPart(UriPartial.Authority);
         }
 
-        public void Sync()
+        /// <summary>
+        /// Update settings.
+        /// </summary>
+        public void UpdateSettings(RepoInfo repoInfo)
         {
-            OutlookSession outlookSession = new OutlookSession();
-            Oris4RestSession restSession = new Oris4RestSession(repoUrl);
+            this.repoInfo = repoInfo;
+        }
 
-            restSession.login(repoInfo.User, repoInfo.Password.ToString());
 
-            string defaultStoreId = outlookSession.getDefaultStoreID();
+        /// <summary>
+        /// Destructor.
+        /// </summary>
+        ~OutlookSync()
+        {
+            Dispose(false);
+        }
 
-            string registeredClient = restSession.getRegisteredClient();
-            Logger.Info("Client: " + registeredClient);
 
-            if (!registeredClient.Equals(defaultStoreId))
+        /// <summary>
+        /// Implement IDisposable interface. 
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+
+        /// <summary>
+        /// Dispose pattern implementation.
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!this.disposed)
             {
-                restSession.putRegisteredClient(registeredClient);
+                if (disposing)
+                {
+                    this.outlookDatabase.Dispose();
+                }
+                this.disposed = true;
             }
+        }
+
+
+        /// <summary>
+        /// Dispose pattern implementation.
+        /// </summary>
+        public void Sync(bool fullSync)
+        {
+            if (!repoInfo.OutlookEnabled || !fullSync)
+            {
+                return;
+            }
+
+            Oris4RestSession restSession = new Oris4RestSession(repoUrl);
+            restSession.login(repoInfo.User, repoInfo.Password.ToString());
+            
+            OutlookSession outlookSession = new OutlookSession();
+
+            RegisterOutlookClient(restSession, outlookSession);
 
             string[] folderPaths = repoInfo.getOutlookFolders();
 
+            HashSet<string> allEmailsInOutlook = new HashSet<string>();
+            
             foreach (string folderPath in folderPaths)
             {
-                MAPIFolder pickedFolder = outlookSession.getFolderByPath(folderPath);
-                if (pickedFolder == null)
+                MAPIFolder folder = outlookSession.getFolderByPath(folderPath);
+                if (folder == null)
                 {
                     Logger.ErrorFormat("Could not find selected outlook folder: {0}", folderPath);
                     continue;
                 }
 
-                Logger.Info("Entry ID: " + pickedFolder.EntryID);
-                Logger.Info("Folder Name: " + pickedFolder.Name);
-                Logger.Info("Folder Path: " + pickedFolder.FolderPath);
+                Logger.DebugFormat("Entry ID: {0}", folder.EntryID);
+                Logger.DebugFormat("Folder Name: {0}", folder.Name);
+                Logger.InfoFormat("Syncing Outlook Folder: {0}", folder.FolderPath);
 
                 List<Email> emailList = new List<Email>();
+                List<EmailAttachment> attachmentList = new List<EmailAttachment>();
 
-                Items items = pickedFolder.Items;
+                Items items = folder.Items;
                 foreach (object item in items)
                 {
                     if (item is MailItem)
                     {
-                        MailItem mailItem = (MailItem)item;
-                        emailList.Add(OutlookService.Instance.getEmail(pickedFolder, mailItem));
+                        SleepWhileSuspended();
 
-                        Attachments attachments = mailItem.Attachments;
-                        if (attachments.Count > 0)
+                        MailItem mailItem = (MailItem)item;
+                        Email email = outlookSession.getEmail(folder, mailItem);
+
+                        if (EmailWorthSyncing(email))
                         {
-                            foreach (Attachment attachment in attachments)
+                            allEmailsInOutlook.Add(email.dataHash);
+
+                            if (!outlookDatabase.ContainsEmail(email.dataHash))
                             {
-                                string tempFilePath = OutlookService.Instance.saveAttachmentToTempFile(attachment);
-                                string dataHash = Utils.Sha256File(tempFilePath);
-                                Logger.InfoFormat("Attachment: {0} {1}", tempFilePath, dataHash);
-                                File.Delete(tempFilePath);
+                                emailList.Add(email);
                             }
+
+                            attachmentList.AddRange(outlookSession.getEmailAttachments(mailItem, email));
+                        }
+
+                        if (emailList.Count >= EMAIL_BATCH_SIZE)
+                        {
+                            UploadEmails(restSession, emailList);
+                            UploadAttachments(restSession, attachmentList);
                         }
                     }
                 }
 
-                List<Email> returned = restSession.insertEmail(registeredClient, "keithharrison@oris4.com", emailList);
+                if (emailList.Count > 0)
+                {
+                    UploadEmails(restSession, emailList);
+                    UploadAttachments(restSession, attachmentList);
+                }
             }
+
+            HashSet<string> allEmails = outlookDatabase.ListEmailDataHashes();
+            List<string> emailsToDelete = new List<string>();
+            foreach (string dataHash in allEmails)
+            {
+                if (!allEmailsInOutlook.Contains(dataHash))
+                {
+                    emailsToDelete.Add(dataHash);
+                }
+            }
+            if (emailsToDelete.Count > 0)
+            {
+                DeleteEmails(restSession, emailsToDelete);
+            }
+        }
+
+        private void RegisterOutlookClient(Oris4RestSession restSession, OutlookSession outlookSession)
+        {
+            SleepWhileSuspended();
+            //Client registration...
+            string defaultStoreId = outlookSession.getDefaultStoreID(); // TODO:: We should probably just generate a GUID.
+            string registeredClient = restSession.getRegisteredClient();
+            Logger.Info("Client: " + registeredClient);
+            if (!registeredClient.Equals(defaultStoreId))
+            {
+                SleepWhileSuspended();
+                //TODO: Ask user if they are sure before putting a new client ID (all emails deleted)
+                restSession.putRegisteredClient(defaultStoreId);
+            }
+        }
+
+        private bool EmailWorthSyncing(Email email)
+        {
+
+
+            return true;
+        }
+
+        private bool AttachmentWorthSyncing()
+        {
+
+            return true;
+        }
+
+        private void UploadEmails(Oris4RestSession restSession, List<Email> emails)
+        {
+            SleepWhileSuspended();
+
+            List<Email> returned = restSession.insertEmail(emails);
+
+            foreach (Email email in emails)
+            {
+                //TODO: Check if email was indeed uploaded...
+                outlookDatabase.AddEmail(email.dataHash, email.folderPath, DateTime.Now);
+            }
+
+            emails.Clear();
+        }
+
+        private void DeleteEmails(Oris4RestSession restSession, List<string> emailsToDelete)
+        {
+            SleepWhileSuspended();
+
+            foreach (string dataHash in emailsToDelete)
+            {
+                DeleteEmail(restSession, dataHash);
+            }
+        }
+
+        private void DeleteEmail(Oris4RestSession restSession, string dataHash)
+        {
+            SleepWhileSuspended();
+
+            restSession.deleteEmail(dataHash);
+
+            outlookDatabase.RemoveEmail(dataHash);
+        }
+
+        private void UploadAttachments(Oris4RestSession restSession, List<EmailAttachment> emailAttachments)
+        {
+            SleepWhileSuspended();
+
+            foreach (EmailAttachment emailAttachment in emailAttachments)
+            {
+                if (!outlookDatabase.ContainsAttachment(emailAttachment.emailDataHash, emailAttachment.dataHash, emailAttachment.fileName))
+                {
+                    UploadAttachment(restSession, emailAttachment);
+                }
+            }
+
+            emailAttachments.Clear();
+        }
+
+        private void UploadAttachment(Oris4RestSession restSession, EmailAttachment emailAttachment)
+        {
+            SleepWhileSuspended();
+
+            string returnValue = restSession.insertAttachment(emailAttachment, File.ReadAllBytes(emailAttachment.tempFilePath));
+
+            //Todo: check return value...
+
+            outlookDatabase.AddAttachment(emailAttachment.emailDataHash, emailAttachment.dataHash, emailAttachment.fileName,
+                emailAttachment.folderPath, DateTime.Now);
+
+            File.Delete(emailAttachment.tempFilePath);
         }
     }
 }

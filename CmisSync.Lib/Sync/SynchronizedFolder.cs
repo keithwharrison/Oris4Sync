@@ -180,10 +180,7 @@ namespace CmisSync.Lib.Sync
                     }
                 );
 
-                if (repoInfo.OutlookEnabled)
-                {
-                    outlookSync = new CmisSync.Lib.Outlook.OutlookSync(repoInfo);
-                }
+                InitializeOutlookSync(repoInfo);
             }
 
             /// <summary>
@@ -199,6 +196,26 @@ namespace CmisSync.Lib.Sync
 
                 this.repoinfo = repoInfo;
                 cmisParameters[SessionParameter.Password] = repoInfo.Password.ToString();
+
+                if (outlookSync != null)
+                {
+                    outlookSync.UpdateSettings(repoInfo);
+                }
+                else
+                {
+                    InitializeOutlookSync(repoInfo);
+                }
+            }
+
+            /// <summary>
+            /// Initialize Outlook Sync (if it is enabled).
+            /// </summary>
+            private void InitializeOutlookSync(RepoInfo repoInfo)
+            {
+                if (repoInfo.OutlookEnabled)
+                {
+                    outlookSync = new CmisSync.Lib.Outlook.OutlookSync(repoInfo, SleepWhileSuspended, ProcessRecoverableException);
+                }
             }
 
             /// <summary>
@@ -225,13 +242,17 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             protected virtual void Dispose(bool disposing)
             {
-                if (!this.disposed)
+                if (!disposed)
                 {
                     if (disposing)
                     {
-                        this.database.Dispose();
+                        database.Dispose();
+                        if (outlookSync != null)
+                        {
+                            outlookSync.Dispose();
+                        }
                     }
-                    this.disposed = true;
+                    disposed = true;
                 }
             }
 
@@ -312,9 +333,9 @@ namespace CmisSync.Lib.Sync
                         }
                     }
 
-                    if (syncFull && outlookSync != null)
+                    if (outlookSync != null)
                     {
-                        outlookSync.Sync();
+                        outlookSync.Sync(syncFull);
                     }
                 }
             }
@@ -474,7 +495,7 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             private void RecursiveFolderCopy(IFolder remoteFolder, string localFolder)
             {
-                sleepWhileSuspended();
+                SleepWhileSuspended();
 
                 IItemEnumerable<ICmisObject> children;
                 try
@@ -537,7 +558,7 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             private bool DownloadFile(IDocument remoteDocument, string localFolder)
             {
-                sleepWhileSuspended();
+                SleepWhileSuspended();
 
                 string fileName = remoteDocument.ContentStreamFileName;
                 Logger.Info("Downloading: " + fileName);
@@ -670,7 +691,7 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             private bool UploadFile(string filePath, IFolder remoteFolder)
             {
-                sleepWhileSuspended();
+                SleepWhileSuspended();
 
                 Logger.Info("Uploading: " + filePath);
 
@@ -724,7 +745,7 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             private void UploadFolderRecursively(IFolder remoteBaseFolder, string localFolder)
             {
-                sleepWhileSuspended();
+                SleepWhileSuspended();
 
                 IFolder folder;
                 try
@@ -778,7 +799,7 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             private bool UpdateFile(string filePath, IDocument remoteFile)
             {
-                sleepWhileSuspended();
+                SleepWhileSuspended();
                 try
                 {
                     Logger.Info("Updating: " + filePath);
@@ -832,7 +853,7 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             private bool UpdateFile(string filePath, IFolder remoteFolder)
             {
-                sleepWhileSuspended();
+                SleepWhileSuspended();
                 try
                 {
                     // Find the document within the folder.
@@ -874,7 +895,7 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             private bool RemoveFolderLocally(string folderPath)
             {
-                sleepWhileSuspended();
+                SleepWhileSuspended();
                 // Folder has been deleted on server, delete it locally too.
                 try
                 {
@@ -940,7 +961,7 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             private bool RenameFile(string directory, string newFilename, IDocument remoteFile)
             {
-                sleepWhileSuspended();
+                SleepWhileSuspended();
 
                 string oldPathname = Path.Combine(directory, remoteFile.Name);
                 string newPathname = Path.Combine(directory, newFilename);
@@ -975,7 +996,7 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             private bool RenameFolder(string directory, string newFilename, IFolder remoteFolder)
             {
-                sleepWhileSuspended();
+                SleepWhileSuspended();
 
                 string oldPathname = Path.Combine(directory, remoteFolder.Name);
                 string newPathname = Path.Combine(directory, newFilename);
@@ -1007,7 +1028,7 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             private bool MoveFile(string oldDirectory, string newDirectory, IFolder oldRemoteFolder, IFolder newRemoteFolder, IDocument remoteFile)
             {
-                sleepWhileSuspended();
+                SleepWhileSuspended();
 
                 string oldPathname = Path.Combine(oldDirectory, remoteFile.Name);
                 string newPathname = Path.Combine(newDirectory, remoteFile.Name);
@@ -1040,7 +1061,7 @@ namespace CmisSync.Lib.Sync
             /// </summary>
             private bool MoveFolder(string oldDirectory, string newDirectory, IFolder oldRemoteFolder, IFolder newRemoteFolder, IFolder remoteFolder)
             {
-                sleepWhileSuspended();
+                SleepWhileSuspended();
 
                 string oldPathname = Path.Combine(oldDirectory, remoteFolder.Name);
                 string newPathname = Path.Combine(newDirectory, remoteFolder.Name);
@@ -1068,7 +1089,7 @@ namespace CmisSync.Lib.Sync
             /// <summary>
             /// Sleep while suspended.
             /// </summary>
-            private void sleepWhileSuspended()
+            private void SleepWhileSuspended()
             {
                 if (syncWorker.CancellationPending)
                 {

@@ -8,6 +8,8 @@ namespace CmisSync.Lib.Outlook
     {
         private RestClient client = null;
         private OAuth oAuth = null;
+        private string emailAddress = null;
+        private string registeredClient = null;
 
         public Oris4RestSession(string baseUrl)
             : this(baseUrl, null)
@@ -32,6 +34,7 @@ namespace CmisSync.Lib.Outlook
             if (oAuth != null)
             {
                 client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(oAuth.value, oAuth.tokenType);
+                this.emailAddress = username;
             }
         }
 
@@ -45,14 +48,19 @@ namespace CmisSync.Lib.Outlook
             return Oris4RestService.Instance.getEmail(client, emailKey, linkedEntities, offset, pageSize);
         }
 
-        public void deleteEmail(string accountId, string emailAddress, string emailHash)
+        public void deleteEmail(string emailHash)
         {
-            if (oAuth == null)
+            if (oAuth == null || string.IsNullOrWhiteSpace(emailAddress))
             {
                 throw new PermissionDeniedException("You must login before performing this action");
             }
 
-            Oris4RestService.Instance.deleteEmail(client, accountId, emailAddress, emailHash);
+            if (string.IsNullOrWhiteSpace(registeredClient))
+            {
+                throw new PermissionDeniedException("You must register outlook before performing this action");
+            }
+
+            Oris4RestService.Instance.deleteEmail(client, registeredClient, emailAddress, emailHash);
         }
 
         public List<Email> listEmail(int folderKey, int offset, int pageSize)
@@ -73,6 +81,7 @@ namespace CmisSync.Lib.Outlook
             }
 
             Oris4RestService.Instance.putRegisteredClient(client, accountId);
+            this.registeredClient = accountId;
         }
 
         public string getRegisteredClient()
@@ -82,28 +91,38 @@ namespace CmisSync.Lib.Outlook
                 throw new PermissionDeniedException("You must login before performing this action");
             }
 
-            return Oris4RestService.Instance.getRegisteredClient(client);
+            registeredClient = Oris4RestService.Instance.getRegisteredClient(client);
+            return registeredClient;
         }
 
-        public List<Email> insertEmail(string accountId, string emailAddress, List<Email> emailList)
+        public List<Email> insertEmail(List<Email> emailList)
         {
-            if (oAuth == null)
+            if (oAuth == null || string.IsNullOrWhiteSpace(emailAddress))
             {
                 throw new PermissionDeniedException("You must login before performing this action");
             }
 
-            return Oris4RestService.Instance.insertEmail(client, accountId, emailAddress, emailList);
+            if (string.IsNullOrWhiteSpace(registeredClient))
+            {
+                throw new PermissionDeniedException("You must register outlook before performing this action");
+            }
+
+            return Oris4RestService.Instance.insertEmail(client, registeredClient, emailAddress, emailList);
         }
 
-        public string insertAttachment(string accountId, string emailAddress, EmailAttachment emailAttachment,
-            byte[] data, string contentType)
+        public string insertAttachment(EmailAttachment emailAttachment, byte[] data)
         {
-            if (oAuth == null)
+            if (oAuth == null || string.IsNullOrWhiteSpace(emailAddress))
             {
                 throw new PermissionDeniedException("You must login before performing this action");
             }
 
-            return Oris4RestService.Instance.insertAttachment(client, accountId, emailAddress, emailAttachment, data, contentType);
+            if (string.IsNullOrWhiteSpace(registeredClient))
+            {
+                throw new PermissionDeniedException("You must register outlook before performing this action");
+            }
+
+            return Oris4RestService.Instance.insertAttachment(client, registeredClient, emailAddress, emailAttachment, data);
         }
     }
 }

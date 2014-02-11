@@ -409,6 +409,32 @@ namespace CmisSync.Lib
         }
 
         /// <summary>
+        /// Calculate the Md5 checksum of a file.
+        /// </summary>
+        public static string Md5File(string filePath)
+        {
+            using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (BufferedStream bs = new BufferedStream(fs))
+            using (MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider())
+            {
+                byte[] hash = md5.ComputeHash(bs);
+                return ByteToHex(hash, false);
+            }
+        }
+
+        /// <summary>
+        /// Calculate the SHA256 checksum of a data string.
+        /// </summary>
+        public static string Md5Data(string data)
+        {
+            using (MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider())
+            {
+                byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(data), 0, Encoding.UTF8.GetByteCount(data));
+                return ByteToHex(hash, false);
+            }
+        }
+
+        /// <summary>
         /// Transforms a given hash into a hex string.
         /// </summary>
         public static string ByteToHex(byte[] hash)

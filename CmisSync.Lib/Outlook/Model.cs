@@ -17,7 +17,7 @@ namespace CmisSync.Lib.Outlook
         public string folderPath { get; set; }
         public string inReplyTo { get; set; }
         public List<EmailContact> emailContacts { get; set; }
-        public List<EmailAttachment> attachments { get; set; }
+        public List<JsonEmailAttachment> attachments { get; set; }
         public DateTime lastModified { get; set; }
         public int key { get; set; }
     }
@@ -32,6 +32,17 @@ namespace CmisSync.Lib.Outlook
     {
         public string dataHash { get; set; }
         public string emailDataHash { get; set; }
+        public string fileName { get; set; }
+        public long fileSize { get; set; }
+        public string folderPath { get; set; }
+        public string tempFilePath { get; set; }
+    }
+    
+    public class JsonEmailAttachment
+    {
+        public string dataHash { get; set; }
+        public string emailDatahash { get; set; }
+        public string name { get; set; }
         public string fileName { get; set; }
         public long fileSize { get; set; }
     }
