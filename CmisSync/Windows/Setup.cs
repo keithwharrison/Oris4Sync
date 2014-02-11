@@ -29,7 +29,6 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Shell;
-using WPF = System.Windows.Controls;
 
 namespace CmisSync
 {
@@ -93,6 +92,8 @@ namespace CmisSync
                 {
                     Logger.Debug("Entering ChangePageEvent.");
                     Reset();
+
+                    PageTitle = CmisSync.Properties_Resources.Oris4Sync;
 
                     //Remove window activated event handler if one exists...
                     if (windowActivatedEventHandler != null)
@@ -788,16 +789,8 @@ namespace CmisSync
                                 TreeView outlookTreeView = new TreeView()
                                 {
                                     Width = 420,
-                                    Height = 225,
+                                    Height = 235,
                                     Visibility = Visibility.Hidden,
-                                };
-
-                                TextBlock outlookTreeViewErrorLabel = new TextBlock()
-                                {
-                                    FontSize = 11,
-                                    Foreground = new SolidColorBrush(Color.FromRgb(255, 128, 128)),
-                                    Visibility = Visibility.Hidden,
-                                    TextWrapping = TextWrapping.Wrap
                                 };
 
                                 Button cancel_button = new Button()
@@ -820,7 +813,7 @@ namespace CmisSync
                                 Buttons.Add(continue_button);
                                 Buttons.Add(cancel_button);
 
-                                // Local Folder Name
+                                // Place items
                                 ContentCanvas.Children.Add(outlookCheckbox);
                                 Canvas.SetTop(outlookCheckbox, 60);
                                 Canvas.SetLeft(outlookCheckbox, 185);
@@ -833,10 +826,6 @@ namespace CmisSync
                                 Canvas.SetTop(outlookTreeView, 110);
                                 Canvas.SetLeft(outlookTreeView, 185);
 
-                                ContentCanvas.Children.Add(outlookTreeViewErrorLabel);
-                                Canvas.SetTop(outlookTreeViewErrorLabel, 340);
-                                Canvas.SetLeft(outlookTreeViewErrorLabel, 185);
-
                                 outlookCheckbox.Focus();
 
                                 outlookCheckbox.Click += delegate
@@ -844,27 +833,10 @@ namespace CmisSync
                                     if (outlookCheckbox.IsChecked.Value && outlookTreeView.Items.Count <= 0)
                                     {
                                         //Populate tree...
-
-                                        // Show wait cursor
-                                        System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.WaitCursor;
-
-                                        // Get outlook folders (asynchronously)
-                                        GetOutlookFolderTreeDelegate outlookFolderTreeDelegate =
-                                            new GetOutlookFolderTreeDelegate(getOutlookFolderTree);
-                                        IAsyncResult asyncResult = outlookFolderTreeDelegate.BeginInvoke(null, null);
-                                        while (!asyncResult.AsyncWaitHandle.WaitOne()) //TODO: Do we want a timeout here or wait indefinately
-                                        {
-                                            System.Windows.Forms.Application.DoEvents();
-                                        }
-                                        List<OutlookFolder> outlookFolderTree = outlookFolderTreeDelegate.EndInvoke(asyncResult);
-                                        populateOutlookTreeView(outlookTreeView.Items, outlookFolderTree);
-                                        
-                                        // Hide wait cursor
-                                        System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default;
+                                        populateOutlookTreeView(outlookTreeView);
                                     }
                                     outlookTreeViewLabel.Visibility = outlookCheckbox.IsChecked.Value ? Visibility.Visible : Visibility.Hidden;
                                     outlookTreeView.Visibility = outlookCheckbox.IsChecked.Value ? Visibility.Visible : Visibility.Hidden;
-                                    outlookTreeViewErrorLabel.Visibility = Visibility.Hidden;
                                 };
 
                                 cancel_button.Click += delegate
@@ -874,26 +846,17 @@ namespace CmisSync
 
                                 continue_button.Click += delegate
                                 {
-                                    outlookTreeViewErrorLabel.Visibility = Visibility.Hidden;
                                     bool outlookEnabled = outlookCheckbox.IsChecked.Value;
+                                    List<string> outlookFolders = new List<string>();
                                     if (outlookEnabled)
                                     {
-                                        List<string> outlookFolders = new List<string>();
                                         getSelectedOutlookFolders(outlookTreeView.Items, outlookFolders);
-                                        if (outlookFolders.Count > 0)
+                                        if (outlookFolders.Count <= 0)
                                         {
-                                            Controller.OutlookPageCompleted(true, outlookFolders);
-                                        }
-                                        else
-                                        {
-                                            outlookTreeViewErrorLabel.Text = Properties_Resources.OutlookSelectFoldersError;
-                                            outlookTreeViewErrorLabel.Visibility = Visibility.Visible;
+                                            outlookEnabled = false;
                                         }
                                     }
-                                    else
-                                    {
-                                        Controller.OutlookPageCompleted(false, null);
-                                    }
+                                    Controller.OutlookPageCompleted(outlookEnabled, outlookFolders);
                                 };
 
                                 back_button.Click += delegate
@@ -953,8 +916,9 @@ namespace CmisSync
                         case PageType.Settings:
                             {
                                 // UI elements.
+                                PageTitle = Properties_Resources.Settings;
 
-                                Header = Properties_Resources.Settings;
+                                const string OUTLOOK = "outlook";
 
                                 // Address input UI.
                                 TextBlock address_label = new TextBlock()
@@ -965,7 +929,7 @@ namespace CmisSync
 
                                 TextBox address_box = new TextBox()
                                 {
-                                    Width = 420,
+                                    Width = 400,
                                     Text = Controller.saved_address.ToString(),
                                     IsEnabled = false,
                                 };
@@ -1008,7 +972,7 @@ namespace CmisSync
                                     Background = Brushes.Transparent,
                                     BorderThickness = new Thickness(0),
                                     TextWrapping = TextWrapping.Wrap,
-                                    MaxWidth = 420
+                                    MaxWidth = 400
                                 };
 
                                 // Sync duration input UI.
@@ -1038,74 +1002,168 @@ namespace CmisSync
                                     TextAlignment = TextAlignment.Right,
                                 };
 
+                                //Outlook
+                                CheckBox outlookCheckbox = new CheckBox()
+                                {
+                                    Content = Properties_Resources.OutlookEnable,
+                                    IsChecked = Controller.saved_outlook_enabled,
+                                };
+
+                                TextBlock outlookTreeViewLabel = new TextBlock()
+                                {
+                                    Text = Properties_Resources.OutlookSelectFolders,
+                                    Visibility = Visibility.Hidden,
+                                };
+
+                                TreeView outlookTreeView = new TreeView()
+                                {
+                                    Width = 400,
+                                    Height = 235,
+                                    Visibility = Visibility.Hidden,
+                                };
+
                                 // Buttons.
                                 Button cancel_button = new Button()
                                 {
-                                    Content = Properties_Resources.Cancel
+                                    Content = Properties_Resources.Cancel,
                                 };
 
                                 Button save_button = new Button()
                                 {
-                                    Content = Properties_Resources.Save
+                                    Content = Properties_Resources.Save,
+                                    IsDefault = true,
                                 };
 
                                 Buttons.Add(save_button);
                                 Buttons.Add(cancel_button);
 
+                                //General settings tab...
+                                Canvas generalCanvas = new Canvas();
+                                
                                 // Address
-                                ContentCanvas.Children.Add(address_label);
-                                Canvas.SetTop(address_label, 50);
-                                Canvas.SetLeft(address_label, 185);
+                                generalCanvas.Children.Add(address_label);
+                                Canvas.SetTop(address_label, 10);
+                                Canvas.SetLeft(address_label, 10);
 
-                                ContentCanvas.Children.Add(address_box);
-                                Canvas.SetTop(address_box, 70);
-                                Canvas.SetLeft(address_box, 185);
+                                generalCanvas.Children.Add(address_box);
+                                Canvas.SetTop(address_box, 30);
+                                Canvas.SetLeft(address_box, 10);
 
                                 // User
-                                ContentCanvas.Children.Add(user_label);
-                                Canvas.SetTop(user_label, 110);
-                                Canvas.SetLeft(user_label, 185);
+                                generalCanvas.Children.Add(user_label);
+                                Canvas.SetTop(user_label, 70);
+                                Canvas.SetLeft(user_label, 10);
 
-                                ContentCanvas.Children.Add(user_box);
-                                Canvas.SetTop(user_box, 130);
-                                Canvas.SetLeft(user_box, 185);
+                                generalCanvas.Children.Add(user_box);
+                                Canvas.SetTop(user_box, 90);
+                                Canvas.SetLeft(user_box, 10);
 
                                 // Password
-                                ContentCanvas.Children.Add(password_label);
-                                Canvas.SetTop(password_label, 170);
-                                Canvas.SetLeft(password_label, 185);
+                                generalCanvas.Children.Add(password_label);
+                                Canvas.SetTop(password_label, 130);
+                                Canvas.SetLeft(password_label, 10);
 
-                                ContentCanvas.Children.Add(password_box);
-                                Canvas.SetTop(password_box, 190);
-                                Canvas.SetLeft(password_box, 185);
+                                generalCanvas.Children.Add(password_box);
+                                Canvas.SetTop(password_box, 150);
+                                Canvas.SetLeft(password_box, 10);
 
                                 // Error label
-                                ContentCanvas.Children.Add(authentication_error_label);
-                                Canvas.SetTop(authentication_error_label, 215);
-                                Canvas.SetLeft(authentication_error_label, 185);
+                                generalCanvas.Children.Add(authentication_error_label);
+                                Canvas.SetTop(authentication_error_label, 175);
+                                Canvas.SetLeft(authentication_error_label, 10);
 
                                 // Sync Interval
-                                ContentCanvas.Children.Add(slider_label);
-                                Canvas.SetTop(slider_label, 250);
-                                Canvas.SetLeft(slider_label, 185);
+                                generalCanvas.Children.Add(slider_label);
+                                Canvas.SetTop(slider_label, 210);
+                                Canvas.SetLeft(slider_label, 10);
 
-                                ContentCanvas.Children.Add(slider);
-                                Canvas.SetTop(slider, 270);
-                                Canvas.SetLeft(slider, 185);
+                                generalCanvas.Children.Add(slider);
+                                Canvas.SetTop(slider, 230);
+                                Canvas.SetLeft(slider, 10);
 
-                                ContentCanvas.Children.Add(slider_min_label);
-                                Canvas.SetTop(slider_min_label, 300);
-                                Canvas.SetLeft(slider_min_label, 185);
+                                generalCanvas.Children.Add(slider_min_label);
+                                Canvas.SetTop(slider_min_label, 260);
+                                Canvas.SetLeft(slider_min_label, 10);
+
+                                generalCanvas.Children.Add(slider_max_label);
+                                Canvas.SetTop(slider_max_label, 260);
+                                Canvas.SetLeft(slider_max_label, 210);
                                 
-                                ContentCanvas.Children.Add(slider_max_label);
-                                Canvas.SetTop(slider_max_label, 300);
-                                Canvas.SetLeft(slider_max_label, 385);
-                                
-                                TaskbarItemInfo.ProgressValue = 0.0;
-                                TaskbarItemInfo.ProgressState = TaskbarItemProgressState.None;
+                                //Outlook canvas...
+                                Canvas outlookCanvas = new Canvas();
 
-                                user_box.Focus();
+                                outlookCanvas.Children.Add(outlookCheckbox);
+                                Canvas.SetTop(outlookCheckbox, 10);
+                                Canvas.SetLeft(outlookCheckbox, 10);
 
+                                outlookCanvas.Children.Add(outlookTreeViewLabel);
+                                Canvas.SetTop(outlookTreeViewLabel, 40);
+                                Canvas.SetLeft(outlookTreeViewLabel, 10);
+
+                                outlookCanvas.Children.Add(outlookTreeView);
+                                Canvas.SetTop(outlookTreeView, 60);
+                                Canvas.SetLeft(outlookTreeView, 10);
+
+
+                                //Tab control...
+                                TabControl tabControl = new TabControl()
+                                {
+                                    Width = 435,
+                                    Height = 340,
+                                };
+
+                                tabControl.Items.Add(new TabItem()
+                                {
+                                    Header = "General", //Properties_Resources.General
+                                    Content = generalCanvas,
+                                });
+
+                                tabControl.Items.Add(new TabItem()
+                                {
+                                    Name = OUTLOOK,
+                                    Header = "Outlook", //Properties_Resources.Outlook
+                                    Content = outlookCanvas,
+                                });
+
+                                tabControl.SelectionChanged += delegate(object sender, SelectionChangedEventArgs e)
+                                {
+                                    if (OUTLOOK.Equals(((TabItem)tabControl.SelectedItem).Name) &&
+                                        outlookCheckbox.IsChecked.Value &&
+                                        outlookTreeView.Items.Count <= 0)
+                                    {
+                                        populateOutlookTreeView(outlookTreeView, Controller.saved_outlook_folders);
+                                    }
+                                    outlookTreeViewLabel.Visibility = outlookCheckbox.IsChecked.Value ? Visibility.Visible : Visibility.Hidden;
+                                    outlookTreeView.Visibility = outlookCheckbox.IsChecked.Value ? Visibility.Visible : Visibility.Hidden;
+                                };
+
+                                outlookCheckbox.Click += delegate
+                                {
+                                    if (outlookCheckbox.IsChecked.Value && outlookTreeView.Items.Count <= 0)
+                                    {
+                                        //Populate tree...
+                                        populateOutlookTreeView(outlookTreeView, Controller.saved_outlook_folders);
+                                    }
+                                    outlookTreeViewLabel.Visibility = outlookCheckbox.IsChecked.Value ? Visibility.Visible : Visibility.Hidden;
+                                    outlookTreeView.Visibility = outlookCheckbox.IsChecked.Value ? Visibility.Visible : Visibility.Hidden;
+                                };
+
+                                if (Controller.isOutlookIntegrationAvailable())
+                                {
+                                    //Display tabs when outlook is available
+                                    ContentCanvas.Children.Add(tabControl);
+                                    Canvas.SetTop(tabControl, 10);
+                                    Canvas.SetLeft(tabControl, 170);
+                                }
+                                else
+                                {
+                                    //No tabs when outlook is not available
+                                    Header = Properties_Resources.Settings;
+
+                                    ContentCanvas.Children.Add(generalCanvas);
+                                    Canvas.SetTop(generalCanvas, 60);
+                                    Canvas.SetLeft(generalCanvas, 175);
+                                }
 
                                 // Actions.
                                 Controller.UpdateAddProjectButtonEvent += delegate(bool button_enabled)
@@ -1123,6 +1181,27 @@ namespace CmisSync
 
                                 save_button.Click += delegate
                                 {
+                                    bool outlookEnabled = false;
+                                    List<string> outlookFolders = new List<string>();
+                                    if (Controller.isOutlookIntegrationAvailable())
+                                    {
+                                        outlookEnabled = outlookCheckbox.IsChecked.Value;
+                                        if (outlookTreeView.Items.Count <= 0)
+                                        {
+                                            //TreeView was never initialized so just keep the old values
+                                            outlookFolders.AddRange(Controller.saved_outlook_folders);
+                                        }
+                                        else
+                                        {
+                                            getSelectedOutlookFolders(outlookTreeView.Items, outlookFolders);
+                                        }
+
+                                        if (outlookFolders.Count <= 0)
+                                        {
+                                            outlookEnabled = false;
+                                        }
+                                    }
+
                                     if (!String.IsNullOrEmpty(password_box.Password))
                                     {
                                         // Show wait cursor
@@ -1177,13 +1256,13 @@ namespace CmisSync
                                         else
                                         {
                                             // Continue to next step, which is choosing a particular folder.
-                                            Controller.SettingsPageCompleted(password_box.Password, slider.PollInterval);
+                                            Controller.SettingsPageCompleted(password_box.Password, slider.PollInterval, outlookEnabled, outlookFolders);
                                         }
 
                                     }
                                     else
                                     {
-                                        Controller.SettingsPageCompleted(null, slider.PollInterval);
+                                        Controller.SettingsPageCompleted(null, slider.PollInterval, outlookEnabled, outlookFolders);
                                     }
 
                                 };
@@ -1212,13 +1291,39 @@ namespace CmisSync
             return outlookSession.getFolderTree();
         }
 
-        private static void populateOutlookTreeView(ItemCollection treeViewItems, List<OutlookFolder> folderTree)
+        private static void populateOutlookTreeView(TreeView outlookTreeView)
+        {
+            populateOutlookTreeView(outlookTreeView, new List<string>(0));
+        }
+
+        private static void populateOutlookTreeView(TreeView outlookTreeView, List<string> selectedFolders)
+        {
+            // Show wait cursor
+            System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.WaitCursor;
+
+            // Get outlook folders (asynchronously)
+            GetOutlookFolderTreeDelegate outlookFolderTreeDelegate =
+                new GetOutlookFolderTreeDelegate(getOutlookFolderTree);
+            IAsyncResult asyncResult = outlookFolderTreeDelegate.BeginInvoke(null, null);
+            while (!asyncResult.AsyncWaitHandle.WaitOne()) //TODO: Do we want a timeout here or wait indefinately
+            {
+                System.Windows.Forms.Application.DoEvents();
+            }
+            List<OutlookFolder> outlookFolderTree = outlookFolderTreeDelegate.EndInvoke(asyncResult);
+            populateOutlookTreeView(outlookTreeView.Items, outlookFolderTree, selectedFolders);
+
+            // Hide wait cursor
+            System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default;
+        }
+
+        private static void populateOutlookTreeView(ItemCollection treeViewItems, List<OutlookFolder> folderTree, List<string> selectedFolders)
         {
             foreach(OutlookFolder outlookFolder in folderTree)
             {
                 CheckBox checkBox = new CheckBox()
                 {
                      Content = outlookFolder.name,
+                     IsChecked = selectedFolders.Contains(outlookFolder.folderPath),
                 };
 
                 TreeViewItem treeViewItem = new TreeViewItem()
@@ -1233,7 +1338,7 @@ namespace CmisSync
                     checkOutlookTreeViewItems(treeViewItem.Items, checkBox.IsChecked.Value);
                 };
 
-                populateOutlookTreeView(treeViewItem.Items, outlookFolder.children);
+                populateOutlookTreeView(treeViewItem.Items, outlookFolder.children, selectedFolders);
                 treeViewItems.Add(treeViewItem); 
             }
         }

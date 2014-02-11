@@ -243,7 +243,7 @@ namespace CmisSync.Lib.Outlook
         {
             string dataToHash = createEmailHashString(email);
             string dataHash = Utils.Sha256Data(dataToHash);
-            Logger.InfoFormat("DataHash: {0} {1}", dataToHash, dataHash);
+            //Logger.InfoFormat("DataHash: {0} {1}", dataToHash, dataHash);
             return dataHash;
         }
 

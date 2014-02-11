@@ -264,13 +264,13 @@ namespace CmisSync
         /// <summary>
         /// Update settings for repository.
         /// </summary>
-        public void UpdateRepositorySettings(string repoName, string password, int pollInterval)
+        public void UpdateRepositorySettings(string repoName, string password, int pollInterval, bool outlookEnabled, string[] outlookFolders)
         {
             foreach (RepoBase repoBase in this.repositories)
             {
                 if (repoBase.Name == repoName)
                 {
-                    repoBase.UpdateSettings(password, pollInterval);
+                    repoBase.UpdateSettings(password, pollInterval, outlookEnabled, outlookFolders);
                     OnErrorResolved();
                     FolderListChanged();
                 }
@@ -472,12 +472,9 @@ namespace CmisSync
             repoInfo.PollInterval = Config.DEFAULT_POLL_INTERVAL;
             repoInfo.OutlookEnabled = outlookEnabled;
 
-            if (outlookFolders != null)
+            foreach (string outlookFolder in outlookFolders)
             {
-                foreach (string outlookFolder in outlookFolders)
-                {
-                    repoInfo.addOutlookFolder(outlookFolder);
-                }
+                repoInfo.addOutlookFolder(outlookFolder);
             }
 
             foreach (string ignore in ignoredPaths)

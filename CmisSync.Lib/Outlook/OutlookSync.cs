@@ -50,6 +50,11 @@ namespace CmisSync.Lib.Outlook
             foreach (string folderPath in folderPaths)
             {
                 MAPIFolder pickedFolder = outlookSession.getFolderByPath(folderPath);
+                if (pickedFolder == null)
+                {
+                    Logger.ErrorFormat("Could not find selected outlook folder: {0}", folderPath);
+                    continue;
+                }
 
                 Logger.Info("Entry ID: " + pickedFolder.EntryID);
                 Logger.Info("Folder Name: " + pickedFolder.Name);

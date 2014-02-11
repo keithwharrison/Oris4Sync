@@ -241,7 +241,7 @@ namespace CmisSync.Lib
         /// <summary>
         /// Update repository settings.
         /// </summary>
-        public virtual void UpdateSettings(string password, int pollInterval)
+        public virtual void UpdateSettings(string password, int pollInterval, bool outlookEnabled, string[] outlookFolders)
         {
             //Get configuration
             Config config = ConfigManager.CurrentConfig;
@@ -256,14 +256,28 @@ namespace CmisSync.Lib
             {
                 this.RepoInfo.Password = new CmisSync.Auth.CmisPassword(password.TrimEnd());
                 syncConfig.ObfuscatedPassword = RepoInfo.Password.ObfuscatedPassword;
-                Logger.Debug("Updated \"" + this.Name + "\" password");
+                Logger.DebugFormat("Updated \"{0}\" password", this.Name);
             }
 
             //Update poll interval
             this.RepoInfo.PollInterval = pollInterval;
             this.remote_timer.Interval = pollInterval;
             syncConfig.PollInterval = pollInterval;
-            Logger.Debug("Updated \"" + this.Name + "\" poll interval: " + pollInterval);
+            Logger.DebugFormat("Updated \"{0}\" poll interval: {1}", this.Name, pollInterval);
+
+            //Update outlook enabled
+            this.RepoInfo.OutlookEnabled = outlookEnabled;
+            syncConfig.OutlookEnabled = outlookEnabled;
+            Logger.DebugFormat("Updated \"{0}\" outlook enabled: {1}", this.Name, outlookEnabled);
+
+            //Update outlook folders...
+            this.RepoInfo.clearOutlookFolders();
+            syncConfig.OutlookFolders.Clear();
+            foreach (string outlookFolder in outlookFolders)
+            {
+                this.RepoInfo.addOutlookFolder(outlookFolder);
+                syncConfig.OutlookFolders.Add(new CmisSync.Lib.Config.FolderPath() { Path = outlookFolder });
+            }
 
             //Save configuration
             config.Save();

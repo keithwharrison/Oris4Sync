@@ -318,7 +318,7 @@ Please check the protocol part of the given URL. Maybe your server is not capabl
     <value>Run sync now</value>
   </data>
   <data name="Settings" xml:space="preserve">
-    <value>Settings...</value>
+    <value>Settings</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>Save</value>
@@ -364,5 +364,8 @@ Please check the protocol part of the given URL. Maybe your server is not capabl
   </data>
   <data name="OutlookSyncWithOris4" xml:space="preserve">
     <value>Sync Outlook mail with Oris4?</value>
+  </data>
+  <data name="SettingsMenu" xml:space="preserve">
+    <value>Settings...</value>
   </data>
 </root>

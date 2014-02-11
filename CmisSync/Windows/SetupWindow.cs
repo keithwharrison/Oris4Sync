@@ -40,6 +40,11 @@ namespace CmisSync {
         public Canvas ContentCanvas  = new Canvas ();
 
         /// <summary>
+        /// Set the page title.
+        /// </summary>
+        public string PageTitle;
+
+        /// <summary>
         /// Header showing what the wizard step is about.
         /// </summary>
         public string Header;
@@ -87,7 +92,7 @@ namespace CmisSync {
 			
             // Taskbar
 			TaskbarItemInfo = new TaskbarItemInfo () {
-				Description = "Oris4 Sync"
+				Description = Title
 			};
 
             // Separation and background for the line of buttons.
@@ -144,10 +149,15 @@ namespace CmisSync {
             ContentCanvas.Children.Add (this.buttonsLine);
             ContentCanvas.Children.Add (this.side_splash);
 
+            // Reset title
+            Title = CmisSync.Properties_Resources.Oris4Sync;
+            TaskbarItemInfo.Description = Title;
+
             // Reset buttons and labels.
-            Buttons       = new List <Button> ();
-            Header        = "";
-            Description   = "";
+            PageTitle = "";
+            Header = "";
+            Description = "";
+            Buttons = new List<Button>();
         }
         
         
@@ -156,12 +166,20 @@ namespace CmisSync {
         /// </summary>
         public void ShowAll ()
         {
+            //Page title...
+            if (!string.IsNullOrWhiteSpace(PageTitle))
+            {
+                Title = PageTitle;
+                TaskbarItemInfo.Description = Title;
+            }
+
             // Create header and description.
             Label header_label = new Label () {
                 Content    = Header,
                 Foreground = new SolidColorBrush (Color.FromRgb (0, 51, 153)),
                 FontSize   = 16
             };
+
             TextBlock description_label = new TextBlock () {
                 Text         = Description, 
                 TextWrapping = TextWrapping.Wrap,
@@ -169,10 +187,12 @@ namespace CmisSync {
             };
 
             // Labels position.
-            
-            ContentCanvas.Children.Add (header_label);
-            Canvas.SetLeft (header_label, 180);
-            Canvas.SetTop (header_label, 18);    
+            if (!string.IsNullOrWhiteSpace(Header))
+            {
+                ContentCanvas.Children.Add(header_label);
+                Canvas.SetLeft(header_label, 180);
+                Canvas.SetTop(header_label, 18);
+            }
 
             if (!string.IsNullOrWhiteSpace(Description))
             {

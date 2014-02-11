@@ -19,6 +19,7 @@ using CmisSync.Lib;
 using CmisSync.Lib.Cmis;
 using log4net;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Timers;
 
@@ -297,14 +298,17 @@ namespace CmisSync
         /// </summary>
         public void SettingsClicked(string reponame)
         {
-            CmisSync.Lib.Config.SyncConfig.Folder repository = ConfigManager.CurrentConfig.getFolder(reponame);
-            Program.UI.Setup.Controller.saved_repository = reponame;
-            if (repository != null)
+            CmisSync.Lib.Config.SyncConfig.Folder configFolder = ConfigManager.CurrentConfig.getFolder(reponame);
+            if (configFolder != null)
             {
-                Program.UI.Setup.Controller.saved_user = repository.UserName;
-                Program.UI.Setup.Controller.saved_remote_path = repository.RemotePath;
-                Program.UI.Setup.Controller.saved_address = repository.RemoteUrl;
-                Program.UI.Setup.Controller.saved_sync_interval = (int)repository.PollInterval;
+                RepoInfo repoInfo = configFolder.GetRepoInfo();
+                Program.UI.Setup.Controller.saved_repository = reponame;
+                Program.UI.Setup.Controller.saved_user = repoInfo.User;
+                Program.UI.Setup.Controller.saved_remote_path = repoInfo.RemotePath;
+                Program.UI.Setup.Controller.saved_address = repoInfo.Address;
+                Program.UI.Setup.Controller.saved_sync_interval = (int)repoInfo.PollInterval;
+                Program.UI.Setup.Controller.saved_outlook_enabled = repoInfo.OutlookEnabled;
+                Program.UI.Setup.Controller.saved_outlook_folders = new List<string>(repoInfo.getOutlookFolders());
             }
             Program.Controller.ShowSetupWindow(PageType.Settings);
         }

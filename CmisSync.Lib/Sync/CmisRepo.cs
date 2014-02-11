@@ -93,9 +93,9 @@ namespace CmisSync.Lib.Sync
         /// <summary>
         /// Update repository settings.
         /// </summary>
-        public override void UpdateSettings(string password, int pollInterval)
+        public override void UpdateSettings(string password, int pollInterval, bool outlookEnabled, string[] outlookFolders)
         {
-            base.UpdateSettings(password, pollInterval);
+            base.UpdateSettings(password, pollInterval, outlookEnabled, outlookFolders);
             synchronizedFolder.CancelSync();
             synchronizedFolder.Dispose();
             synchronizedFolder = new SynchronizedFolder(RepoInfo, this);

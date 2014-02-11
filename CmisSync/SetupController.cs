@@ -259,12 +259,12 @@ namespace CmisSync
         /// <summary>
         /// Whether or not outlook is inabled.
         /// </summary>
-        public bool outlook_enabled = false;
+        public bool saved_outlook_enabled = false;
 
         /// <summary>
         /// Selected outlook folders.
         /// </summary>
-        public List<string> outlook_folders;
+        public List<string> saved_outlook_folders = new List<string>();
 
         /// <summary>
         /// Load repositories information from a CMIS endpoint.
@@ -642,8 +642,8 @@ namespace CmisSync
         /// </summary>
         public void OutlookPageCompleted(bool outlookEnabled, List<string> outlookFolders)
         {
-            this.outlook_enabled = outlookEnabled;
-            this.outlook_folders = outlookFolders;
+            this.saved_outlook_enabled = outlookEnabled;
+            this.saved_outlook_folders = outlookFolders;
 
             Finish();
         }
@@ -665,8 +665,8 @@ namespace CmisSync
                     PreviousPath,
                     saved_local_path,
                     ignoredPaths,
-                    outlook_enabled,
-                    outlook_folders);
+                    saved_outlook_enabled,
+                    saved_outlook_folders);
             }
             catch (Exception e)
             {
@@ -739,14 +739,14 @@ namespace CmisSync
         /// <summary>
         /// Repository settings page.
         /// </summary>
-        public void SettingsPageCompleted(string password, int pollInterval)
+        public void SettingsPageCompleted(string password, int pollInterval, bool outlookEnabled, List<string> outlookFolders)
         {
             //Run this in background so as not to free the UI...
             BackgroundWorker worker = new BackgroundWorker();
             worker.DoWork += new DoWorkEventHandler(
                 delegate(Object o, DoWorkEventArgs args)
                 {
-                    Program.Controller.UpdateRepositorySettings(saved_repository, password, pollInterval);
+                    Program.Controller.UpdateRepositorySettings(saved_repository, password, pollInterval, outlookEnabled, outlookFolders.ToArray());
                 }
             );
             worker.RunWorkerAsync();

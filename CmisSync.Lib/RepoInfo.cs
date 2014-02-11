@@ -164,6 +164,14 @@ namespace CmisSync.Lib
         }
 
         /// <summary>
+        /// Clear outlook folders.
+        /// </summary>
+        public void clearOutlookFolders()
+        {
+            this.outlookFolders.Clear();
+        }
+
+        /// <summary>
         /// Get array of outlook folders.
         /// </summary>
         /// <returns>all ignored folders</returns>

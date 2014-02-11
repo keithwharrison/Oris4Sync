@@ -1,6 +1,7 @@
 using log4net;
 using Microsoft.Office.Interop.Outlook;
 using stdole;
+using System;
 using System.Collections.Generic;
 
 namespace CmisSync.Lib.Outlook
@@ -87,7 +88,7 @@ namespace CmisSync.Lib.Outlook
                 return null;
             }
 
-            string[] pathElements = folderPath.Split('\\');
+            string[] pathElements = folderPath.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
             int currentElement = 0;
             Folder currentFolder = null;
             while (currentElement < pathElements.Length)

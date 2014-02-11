@@ -608,11 +608,20 @@ namespace CmisSync {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Settings....
+        ///   Looks up a localized string similar to Settings.
         /// </summary>
         internal static string Settings {
             get {
                 return ResourceManager.GetString("Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings....
+        /// </summary>
+        internal static string SettingsMenu {
+            get {
+                return ResourceManager.GetString("SettingsMenu", resourceCulture);
             }
         }
         

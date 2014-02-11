@@ -287,7 +287,7 @@ namespace CmisSync
                     // Sub-item: settings dialog
                     ToolStripMenuItem settingsItem = new ToolStripMenuItem()
                     {
-                        Text = Properties_Resources.Settings,
+                        Text = Properties_Resources.SettingsMenu,
                         Name = "settings",
                     };
                     settingsItem.Click += SettingsDelegate(folderName);
