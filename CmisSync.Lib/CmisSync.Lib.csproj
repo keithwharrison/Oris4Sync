@@ -60,6 +60,7 @@
     <Compile Include="FolderLock.cs" />
     <Compile Include="Outlook\Config.cs" />
     <Compile Include="Outlook\ConfigOverride.cs" />
+    <Compile Include="Outlook\JsonSerializer.cs" />
     <Compile Include="Outlook\OutlookDatabase.cs" />
     <Compile Include="Outlook\Model.cs" />
     <Compile Include="Outlook\Oris4RestSession.cs" />

@@ -127,7 +127,10 @@ namespace CmisSync.Lib.Outlook
             
             OutlookSession outlookSession = new OutlookSession();
 
-            RegisterOutlookClient(restSession, outlookSession);
+            RegisterOutlookClient(restSession);
+
+            //Send and recieve emails...
+            outlookSession.sendAndRecieve();
 
             string[] folderPaths = repoInfo.getOutlookFolders();
 
@@ -199,20 +202,32 @@ namespace CmisSync.Lib.Outlook
             {
                 DeleteEmails(restSession, emailsToDelete);
             }
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
-        private void RegisterOutlookClient(Oris4RestSession restSession, OutlookSession outlookSession)
+        private void RegisterOutlookClient(Oris4RestSession restSession)
         {
             SleepWhileSuspended();
             //Client registration...
-            string defaultStoreId = outlookSession.getDefaultStoreID(); // TODO:: We should probably just generate a GUID.
+            string clientId = outlookDatabase.GetClientId();
+            if (string.IsNullOrWhiteSpace(clientId))
+            {
+                clientId = Guid.NewGuid().ToString();
+                Logger.InfoFormat("Outlook Client ID not found creating a new one: {0}", clientId);
+            }
+
             string registeredClient = restSession.getRegisteredClient();
-            Logger.Info("Client: " + registeredClient);
-            if (!registeredClient.Equals(defaultStoreId))
+            Logger.InfoFormat("Registered Outlook Client ID: {0}", registeredClient);
+            if (!registeredClient.Equals(clientId))
             {
                 SleepWhileSuspended();
                 //TODO: Ask user if they are sure before putting a new client ID (all emails deleted)
-                restSession.putRegisteredClient(defaultStoreId);
+                Logger.InfoFormat("Registering new client...");
+                restSession.putRegisteredClient(clientId);
+                outlookDatabase.RemoveAllEmails();
+                outlookDatabase.SetClientId(clientId);
             }
         }
 

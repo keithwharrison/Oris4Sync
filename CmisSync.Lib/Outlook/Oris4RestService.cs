@@ -37,13 +37,20 @@ namespace CmisSync.Lib.Outlook
         {
         }
 
+        private IRestRequest getRestRequest(string uri, Method method)
+        {
+            IRestRequest request = new RestRequest(uri, method);
+            request.JsonSerializer = new JsonSerializer();
+            return request;
+        }
+
         public OAuth login(RestClient client, string username, string password)
         {
             string consumerKey = Config.Instance.ConsumerKey;
             string consumerSecret = Config.Instance.ConsumerSecret;
             string grantType = Config.Instance.GrantType;
 
-            IRestRequest request = new RestRequest(URI_OAUTH_LOGIN, Method.POST);
+            IRestRequest request = getRestRequest(URI_OAUTH_LOGIN, Method.POST);
             request.AddParameter("client_id", consumerKey);
             request.AddParameter("client_secret", consumerSecret);
             request.AddParameter("grant_type", grantType);
@@ -60,7 +67,7 @@ namespace CmisSync.Lib.Outlook
 
         public Email getEmail(RestClient client, int emailKey, bool linkedEntities, int offset, int pageSize)
         {
-            RestRequest request = new RestRequest(URI_EMAIL_GET, Method.GET);
+            IRestRequest request = getRestRequest(URI_EMAIL_GET, Method.GET);
             request.AddUrlSegment("key", emailKey.ToString());
 
             request.AddParameter("getLinkedEntities", linkedEntities.ToString());
@@ -78,7 +85,7 @@ namespace CmisSync.Lib.Outlook
 
         public void deleteEmail(RestClient client, string accountId, string emailAddress, string emailHash)
         {
-            RestRequest request = new RestRequest(URI_EMAIL_DELETE, Method.DELETE);
+            IRestRequest request = getRestRequest(URI_EMAIL_DELETE, Method.DELETE);
             request.AddHeader("Client-GUID", accountId);
             request.AddHeader("Email-Address", emailAddress);
 
@@ -92,7 +99,7 @@ namespace CmisSync.Lib.Outlook
 
         public List<Email> listEmail(RestClient client, int folderKey, int offset, int pageSize)
         {
-            RestRequest request = new RestRequest(URI_EMAIL_LIST_GET, Method.GET);
+            IRestRequest request = getRestRequest(URI_EMAIL_LIST_GET, Method.GET);
 
             request.AddParameter("folderKey", folderKey.ToString());
             request.AddParameter("offset", offset.ToString());
@@ -109,7 +116,7 @@ namespace CmisSync.Lib.Outlook
 
         public void putRegisteredClient(RestClient client, string accountId)
         {
-            RestRequest request = new RestRequest(URI_EMAIL_REGISTERED_CLIENT_PUT, Method.PUT);
+            IRestRequest request = getRestRequest(URI_EMAIL_REGISTERED_CLIENT_PUT, Method.PUT);
             request.AddHeader("Client-Type", CLIENT_TYPE_OUTLOOK);
             request.AddHeader("Client-GUID", accountId);
 
@@ -121,7 +128,7 @@ namespace CmisSync.Lib.Outlook
 
         public string getRegisteredClient(RestClient client)
         {
-            RestRequest request = new RestRequest(URI_EMAIL_REGISTERED_CLIENT_GET, Method.GET);
+            IRestRequest request = getRestRequest(URI_EMAIL_REGISTERED_CLIENT_GET, Method.GET);
             request.AddHeader("Client-Type", CLIENT_TYPE_OUTLOOK);
 
             Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
@@ -140,7 +147,7 @@ namespace CmisSync.Lib.Outlook
 
         public List<Email> insertEmail(RestClient client, string accountId, string emailAddress, List<Email> emailList)
         {
-            RestRequest request = new RestRequest(URI_EMAIL_POST, Method.POST);
+            IRestRequest request = getRestRequest(URI_EMAIL_POST, Method.POST);
             request.AddHeader("Client-GUID", accountId);
             request.AddHeader("Email-Address", emailAddress);
 
@@ -167,17 +174,11 @@ namespace CmisSync.Lib.Outlook
 
         public string insertAttachment(RestClient client, string accountId, string emailAddress, EmailAttachment emailAttachment, byte[] data)
         {
-            RestRequest request = new RestRequest(URI_EMAIL_ATTACHMENT_POST, Method.POST);
+            IRestRequest request = getRestRequest(URI_EMAIL_ATTACHMENT_POST, Method.POST);
             request.AddHeader("Client-GUID", accountId);
             request.AddHeader("Email-Address", emailAddress);
 
-            request.AddParameter("jsonEmailAttachment", request.JsonSerializer.Serialize(new JsonEmailAttachment() { 
-                dataHash = emailAttachment.dataHash,
-                emailDatahash = emailAttachment.emailDataHash,
-                fileName = emailAttachment.fileName,
-                fileSize = emailAttachment.fileSize,
-                name = emailAttachment.fileName,
-            }));
+            request.AddParameter("jsonEmailAttachment", request.JsonSerializer.Serialize(emailAttachment));
 
             request.AddFile("data", data, emailAttachment.fileName);
 

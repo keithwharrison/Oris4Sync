@@ -103,8 +103,6 @@ namespace CmisSync.Lib.Outlook
         {
             Logger.Info("Mail Item: " + mailItem.Subject);
 
-            PropertyAccessor propertyAccessor = mailItem.PropertyAccessor;
-
             Email email = new Email()
             {
                 messageID = getMessageId(mailItem),
@@ -116,6 +114,7 @@ namespace CmisSync.Lib.Outlook
                 references = getReferences(mailItem),
                 body = getBody(mailItem),
                 emailContacts = getEmailContacts(mailItem),
+                entryID = mailItem.EntryID,
             };
 
             email.dataHash = createEmailDataHash(email);
@@ -145,6 +144,7 @@ namespace CmisSync.Lib.Outlook
                 emailDataHash = email.dataHash,
                 dataHash = dataHash,
                 fileName = attachment.DisplayName,
+                name = attachment.DisplayName,
                 fileSize = attachment.Size,
                 folderPath = email.folderPath,
                 tempFilePath = tempFilePath,

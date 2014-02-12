@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
@@ -17,9 +18,12 @@ namespace CmisSync.Lib.Outlook
         public string folderPath { get; set; }
         public string inReplyTo { get; set; }
         public List<EmailContact> emailContacts { get; set; }
-        public List<JsonEmailAttachment> attachments { get; set; }
+        public List<EmailAttachment> attachments { get; set; }
         public DateTime lastModified { get; set; }
         public int key { get; set; }
+        [JsonIgnore]
+        public string entryID { get; set; }
+
     }
 
     public class EmailContact
@@ -31,22 +35,17 @@ namespace CmisSync.Lib.Outlook
     public class EmailAttachment
     {
         public string dataHash { get; set; }
+        [JsonProperty("emailDatahash")]
         public string emailDataHash { get; set; }
-        public string fileName { get; set; }
-        public long fileSize { get; set; }
-        public string folderPath { get; set; }
-        public string tempFilePath { get; set; }
-    }
-    
-    public class JsonEmailAttachment
-    {
-        public string dataHash { get; set; }
-        public string emailDatahash { get; set; }
         public string name { get; set; }
         public string fileName { get; set; }
         public long fileSize { get; set; }
+        [JsonIgnore]
+        public string folderPath { get; set; }
+        [JsonIgnore]
+        public string tempFilePath { get; set; }
     }
-
+    
     public class OAuth
     {
         public string value { get; set; }

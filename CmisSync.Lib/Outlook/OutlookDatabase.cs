@@ -178,6 +178,15 @@ namespace CmisSync.Lib.Outlook
         }
 
         /// <summary>
+        /// Remove all emails (and attachments) from the database.
+        /// </summary>
+        public void RemoveAllEmails()
+        {
+            ExecuteSQLAction("DELETE FROM emails", null);
+            ExecuteSQLAction("DELETE FROM attachments", null);
+        }
+
+        /// <summary>
         /// Get the time at which the file was uploaded.
         /// </summary>
         public DateTime? GetEmailUploadedDate(string dataHash)
@@ -297,6 +306,26 @@ namespace CmisSync.Lib.Outlook
                     dataHash=@dataHash AND fileName=@fileName", parameters);
         }
 
+        /// <summary>
+        /// Get client ID.
+        /// </summary>
+        public string GetClientId()
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            parameters.Add("key", "ClientId");
+            return (string)ExecuteScalarSQLFunction("SELECT value FROM general WHERE key=@key", parameters);
+        }
+
+        /// <summary>
+        /// Set the client ID (overwrites).
+        /// </summary>
+        public void SetClientId(string ClientId)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            parameters.Add("key", "ClientId");
+            parameters.Add("value", ClientId);
+            ExecuteSQLAction("INSERT OR REPLACE INTO general (key, value) VALUES (@key, @value)", parameters);
+        }
         
         /// <summary>
         /// Helper method to execute an SQL command that does not return anything.
