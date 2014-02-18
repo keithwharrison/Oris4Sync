@@ -12,14 +12,14 @@
     <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <DefineConstants>Debug</DefineConstants>
     <SuppressAllWarnings>False</SuppressAllWarnings>
     <Pedantic>True</Pedantic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|ia64' ">
@@ -82,11 +82,15 @@
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <Target Name="BeforeBuild">
-    <GetAssemblyIdentity AssemblyFiles="..\..\..\CmisSync.Lib\bin\$(Configuration)\CmisSync.Lib.dll">
+    <GetAssemblyIdentity AssemblyFiles="..\..\..\CmisSync.Lib\bin\$(Platform)\$(Configuration)\CmisSync.Lib.dll">
       <Output TaskParameter="Assemblies" ItemName="AssemblyVersion" />
     </GetAssemblyIdentity>
     <PropertyGroup>
       <DefineConstants>BuildVersion=%(AssemblyVersion.Version)</DefineConstants>
     </PropertyGroup>
+  </Target>
+  <Target Name="AfterBuild">
+    <Copy SourceFiles=".\bin\$(Platform)\$(Configuration)\$(OutputName).msi" DestinationFiles=".\bin\$(Platform)\$(Configuration)\$(OutputName)_$(Platform).msi" />
+    <Delete Files=".\bin\$(Platform)\$(Configuration)\$(OutputName).msi" />
   </Target>
 </Project>

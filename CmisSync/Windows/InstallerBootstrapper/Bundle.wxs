@@ -27,8 +27,20 @@
       <PackageGroupRef Id="NetFx40ClientWeb" />
       <RollbackBoundary />
       <MsiPackage
-          DisplayName="Oris4 Sync Application"
-          SourceFile="$(var.Installer.TargetPath)"
+          InstallCondition='NOT VersionNT64'
+          DisplayName="Oris4 Sync Application x86"
+          SourceFile="$(var.Installer.ProjectDir)bin\x86\$(var.Installer.Configuration)\Oris4Sync_x86.msi"
+          DisplayInternalUI="no"
+          Visible="no"
+          Vital="yes"
+          Permanent="no">
+        <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]" />
+      </MsiPackage>
+
+      <MsiPackage
+          InstallCondition='VersionNT64'
+          DisplayName="Oris4 Sync Application x64"
+          SourceFile="$(var.Installer.ProjectDir)bin\x64\$(var.Installer.Configuration)\Oris4Sync_x64.msi"
           DisplayInternalUI="no"
           Visible="no"
           Vital="yes"
