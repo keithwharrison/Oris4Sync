@@ -22,29 +22,14 @@ namespace CmisSync.Lib.Outlook
 
         private static readonly string CLIENT_TYPE_OUTLOOK = "outlook";
 
-        private static Oris4RestService instance;
-
-        public static Oris4RestService Instance
-        {
-            get
-            {
-                if (instance == null) instance = new Oris4RestService();
-                return instance;
-            }
-        }
-
-        private Oris4RestService()
-        {
-        }
-
-        private IRestRequest getRestRequest(string uri, Method method)
+        private static IRestRequest getRestRequest(string uri, Method method)
         {
             IRestRequest request = new RestRequest(uri, method);
             request.JsonSerializer = new JsonSerializer();
             return request;
         }
 
-        public OAuth login(RestClient client, string username, string password)
+        public static OAuth login(RestClient client, string username, string password)
         {
             string consumerKey = Config.Instance.ConsumerKey;
             string consumerSecret = Config.Instance.ConsumerSecret;
@@ -65,7 +50,7 @@ namespace CmisSync.Lib.Outlook
             return response.Data;
         }
 
-        public Email getEmail(RestClient client, int emailKey, bool linkedEntities, int offset, int pageSize)
+        public static Email getEmail(RestClient client, int emailKey, bool linkedEntities, int offset, int pageSize)
         {
             IRestRequest request = getRestRequest(URI_EMAIL_GET, Method.GET);
             request.AddUrlSegment("key", emailKey.ToString());
@@ -83,7 +68,7 @@ namespace CmisSync.Lib.Outlook
             return response.Data;
         }
 
-        public void deleteEmail(RestClient client, string accountId, string emailAddress, string emailHash)
+        public static void deleteEmail(RestClient client, string accountId, string emailAddress, string emailHash)
         {
             IRestRequest request = getRestRequest(URI_EMAIL_DELETE, Method.DELETE);
             request.AddHeader("Client-GUID", accountId);
@@ -97,7 +82,7 @@ namespace CmisSync.Lib.Outlook
             checkResponseStatus(response, HttpStatusCode.NoContent);
         }
 
-        public List<Email> listEmail(RestClient client, int folderKey, int offset, int pageSize)
+        public static List<Email> listEmail(RestClient client, int folderKey, int offset, int pageSize)
         {
             IRestRequest request = getRestRequest(URI_EMAIL_LIST_GET, Method.GET);
 
@@ -114,7 +99,7 @@ namespace CmisSync.Lib.Outlook
             return response.Data;
         }
 
-        public void putRegisteredClient(RestClient client, string accountId)
+        public static void putRegisteredClient(RestClient client, string accountId)
         {
             IRestRequest request = getRestRequest(URI_EMAIL_REGISTERED_CLIENT_PUT, Method.PUT);
             request.AddHeader("Client-Type", CLIENT_TYPE_OUTLOOK);
@@ -126,7 +111,7 @@ namespace CmisSync.Lib.Outlook
             checkResponseStatus(response, HttpStatusCode.NoContent);
         }
 
-        public string getRegisteredClient(RestClient client)
+        public static string getRegisteredClient(RestClient client)
         {
             IRestRequest request = getRestRequest(URI_EMAIL_REGISTERED_CLIENT_GET, Method.GET);
             request.AddHeader("Client-Type", CLIENT_TYPE_OUTLOOK);
@@ -145,7 +130,7 @@ namespace CmisSync.Lib.Outlook
             return accountId.Trim('"');
         }
 
-        public List<Email> insertEmail(RestClient client, string accountId, string emailAddress, List<Email> emailList)
+        public static List<Email> insertEmail(RestClient client, string accountId, string emailAddress, List<Email> emailList)
         {
             IRestRequest request = getRestRequest(URI_EMAIL_POST, Method.POST);
             request.AddHeader("Client-GUID", accountId);
@@ -172,7 +157,7 @@ namespace CmisSync.Lib.Outlook
             return response.Data;
         }
 
-        public string insertAttachment(RestClient client, string accountId, string emailAddress, EmailAttachment emailAttachment, byte[] data)
+        public static string insertAttachment(RestClient client, string accountId, string emailAddress, EmailAttachment emailAttachment, byte[] data)
         {
             IRestRequest request = getRestRequest(URI_EMAIL_ATTACHMENT_POST, Method.POST);
             request.AddHeader("Client-GUID", accountId);
@@ -200,17 +185,17 @@ namespace CmisSync.Lib.Outlook
             return response.Content;
         }
 
-        private void checkResponseStatus(IRestResponse restResponse)
+        private static void checkResponseStatus(IRestResponse restResponse)
         {
             checkResponseStatus(restResponse, HttpStatusCode.OK);
         }
 
-        private void checkResponseStatus(IRestResponse restResponse, HttpStatusCode statusCode)
+        private static void checkResponseStatus(IRestResponse restResponse, HttpStatusCode statusCode)
         {
             checkResponseStatus(restResponse, new List<HttpStatusCode>() { statusCode });
         }
 
-        private void checkResponseStatus(IRestResponse restResponse, List<HttpStatusCode> expectedStatus)
+        private static void checkResponseStatus(IRestResponse restResponse, List<HttpStatusCode> expectedStatus)
         {
             //Logger.DebugFormat("StatusCode: {0} {1}", restResponse.StatusCode, restResponse.StatusDescription);
             //Logger.DebugFormat("ResponseStatus: {0}", restResponse.ResponseStatus);

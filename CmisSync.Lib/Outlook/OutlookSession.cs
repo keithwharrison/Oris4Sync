@@ -40,14 +40,21 @@ namespace CmisSync.Lib.Outlook
          
         public OutlookSession()
         {
-            application = OutlookService.Instance.getApplication();
-            nameSpace = OutlookService.Instance.getNameSpace(application);
+            application = OutlookService.getApplication();
+            nameSpace = OutlookService.getNameSpace(application);
             defaultFolder = nameSpace.GetDefaultFolder(OlDefaultFolders.olFolderInbox);
+        }
+
+        public void close()
+        {
+            application = null;
+            nameSpace = null;
+            defaultFolder = null;
         }
 
         public void sendAndRecieve()
         {
-            OutlookService.Instance.sendAndRecieve(nameSpace);
+            OutlookService.sendAndRecieve(nameSpace);
         }
 
         public MAPIFolder getFolderFromID(string entryID)
@@ -127,17 +134,17 @@ namespace CmisSync.Lib.Outlook
 
         public Email getEmail(MAPIFolder folder, MailItem mailItem)
         {
-            return OutlookService.Instance.getEmail(folder, mailItem);
+            return OutlookService.getEmail(folder, mailItem);
         }
         
         public List<EmailAttachment> getEmailAttachments(MailItem mailItem, Email email)
         {
-            return OutlookService.Instance.getEmailAttachments(mailItem, email);
+            return OutlookService.getEmailAttachments(mailItem, email);
         }
 
         public EmailAttachment getEmailAttachment(Attachment attachment, Email email)
         {
-            return OutlookService.Instance.getEmailAttachment(attachment, email);
+            return OutlookService.getEmailAttachment(attachment, email);
         }
     }
 }

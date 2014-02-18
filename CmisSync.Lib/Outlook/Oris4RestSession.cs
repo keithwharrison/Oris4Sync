@@ -30,7 +30,7 @@ namespace CmisSync.Lib.Outlook
 
         public void login(string username, string password)
         {
-            oAuth = Oris4RestService.Instance.login(client, username, password);
+            oAuth = Oris4RestService.login(client, username, password);
             if (oAuth != null)
             {
                 client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(oAuth.value, oAuth.tokenType);
@@ -45,7 +45,7 @@ namespace CmisSync.Lib.Outlook
                 throw new PermissionDeniedException("You must login before performing this action");
             }
 
-            return Oris4RestService.Instance.getEmail(client, emailKey, linkedEntities, offset, pageSize);
+            return Oris4RestService.getEmail(client, emailKey, linkedEntities, offset, pageSize);
         }
 
         public void deleteEmail(string emailHash)
@@ -60,7 +60,7 @@ namespace CmisSync.Lib.Outlook
                 throw new PermissionDeniedException("You must register outlook before performing this action");
             }
 
-            Oris4RestService.Instance.deleteEmail(client, registeredClient, emailAddress, emailHash);
+            Oris4RestService.deleteEmail(client, registeredClient, emailAddress, emailHash);
         }
 
         public List<Email> listEmail(int folderKey, int offset, int pageSize)
@@ -70,7 +70,7 @@ namespace CmisSync.Lib.Outlook
                 throw new PermissionDeniedException("You must login before performing this action");
             }
 
-            return Oris4RestService.Instance.listEmail(client, folderKey, offset, pageSize);
+            return Oris4RestService.listEmail(client, folderKey, offset, pageSize);
         }
 
         public void putRegisteredClient(string accountId)
@@ -80,7 +80,7 @@ namespace CmisSync.Lib.Outlook
                 throw new PermissionDeniedException("You must login before performing this action");
             }
 
-            Oris4RestService.Instance.putRegisteredClient(client, accountId);
+            Oris4RestService.putRegisteredClient(client, accountId);
             this.registeredClient = accountId;
         }
 
@@ -91,7 +91,7 @@ namespace CmisSync.Lib.Outlook
                 throw new PermissionDeniedException("You must login before performing this action");
             }
 
-            registeredClient = Oris4RestService.Instance.getRegisteredClient(client);
+            registeredClient = Oris4RestService.getRegisteredClient(client);
             return registeredClient;
         }
 
@@ -107,7 +107,7 @@ namespace CmisSync.Lib.Outlook
                 throw new PermissionDeniedException("You must register outlook before performing this action");
             }
 
-            return Oris4RestService.Instance.insertEmail(client, registeredClient, emailAddress, emailList);
+            return Oris4RestService.insertEmail(client, registeredClient, emailAddress, emailList);
         }
 
         public string insertAttachment(EmailAttachment emailAttachment, byte[] data)
@@ -122,7 +122,7 @@ namespace CmisSync.Lib.Outlook
                 throw new PermissionDeniedException("You must register outlook before performing this action");
             }
 
-            return Oris4RestService.Instance.insertAttachment(client, registeredClient, emailAddress, emailAttachment, data);
+            return Oris4RestService.insertAttachment(client, registeredClient, emailAddress, emailAttachment, data);
         }
     }
 }
