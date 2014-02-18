@@ -354,7 +354,7 @@ Please check the protocol part of the given URL. Maybe your server is not capabl
     <value>Are you sure you want to disconnect from Oris4?  No files will be deleted from your system but they will no longer be synchronized with Oris4.</value>
   </data>
   <data name="OutlookEnable" xml:space="preserve">
-    <value>Enabled Outlook integration</value>
+    <value>Enable Outlook integration</value>
   </data>
   <data name="OutlookSelectFolders" xml:space="preserve">
     <value>Select Outlook folders to sync from the list below...</value>
@@ -367,5 +367,11 @@ Please check the protocol part of the given URL. Maybe your server is not capabl
   </data>
   <data name="SettingsMenu" xml:space="preserve">
     <value>Settings...</value>
+  </data>
+  <data name="General" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Outlook" xml:space="preserve">
+    <value>Outlook</value>
   </data>
 </root>

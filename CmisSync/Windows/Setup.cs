@@ -1114,14 +1114,14 @@ namespace CmisSync
 
                                 tabControl.Items.Add(new TabItem()
                                 {
-                                    Header = "General", //Properties_Resources.General
+                                    Header = Properties_Resources.General,
                                     Content = generalCanvas,
                                 });
 
                                 tabControl.Items.Add(new TabItem()
                                 {
                                     Name = OUTLOOK,
-                                    Header = "Outlook", //Properties_Resources.Outlook
+                                    Header = Properties_Resources.Outlook,
                                     Content = outlookCanvas,
                                 });
 
