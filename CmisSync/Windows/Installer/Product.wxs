@@ -64,6 +64,7 @@
         <File Id="Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" Source="$(var.CmisSync.TargetDir)\Newtonsoft.Json.dll" DiskId="1" />
         <File Id="RestSharp.dll" Name="RestSharp.dll" Source="$(var.CmisSync.TargetDir)\RestSharp.dll" DiskId="1" />
         <File Id="System.Data.SQLite.dll" Name="System.Data.SQLite.dll" Source="$(var.CmisSync.TargetDir)\System.Data.SQLite.dll" DiskId="1" />
+        <File Id="SQLite.Interop.dll" Name="SQLite.Interop.dll" Source="$(var.CmisSync.TargetDir)\$(var.CmisSync.Platform)\SQLite.Interop.dll" DiskId="1" />
         <File Id="AppLimit.NetSparkle.Net40.dll" Name="AppLimit.NetSparkle.Net40.dll" Source="$(var.CmisSync.TargetDir)\AppLimit.NetSparkle.Net40.dll" DiskId="1" />
         <File Id="cmissync_app.ico" Name="cmissync.ico" Source="$(var.CmisSync.ProjectDir)\Pixmaps\cmissync-app.ico" DiskId="1" />
       </Component>

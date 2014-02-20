@@ -6,6 +6,29 @@
 		<language>en</language>
 
 		<item>
+			<title>Version 3.1.1.0</title>
+			<description><![CDATA[
+				<div style="font-family: 'Lucida Grande', Arial, sans-serif; font-size: 9pt; padding: 3px;">
+					<h1 style="font-size: 9pt; background-color: #e6edff; border: dotted 1px #ccc; margin: 0; padding: 3px;">
+						New in Release 3.1.1.0
+					</h1>
+					<div style="border: dotted 1px #ccc; border-width: 0 1px 1px 1px; padding: 3px; margin: 0 0 12px 0;">
+						<ul>
+							<li>Added Outlook sync capabilities.</li>
+							<li>Updated installer to install a 32bit version on 32bit machines and a 64bit version on 64bit machines.</li>
+						</ul>
+					</div>
+				</div>
+			]]></description>
+ 			<pubDate>Wed, 20 Feb 2014 17:24:00 -0400</pubDate>
+			<enclosure url="http://update.oris4.com/Oris4Sync.3.1.1.0.exe"
+				sparkle:version="3.1.1.0"
+				length="3658384"
+				type="application/octet-stream"
+				sparkle:dsaSignature="oscz6WjXfxJ1p4kHFJX+IC16Kxw7aDSNkYQL+2LVNzYulTZMb5G9kA=="/>
+		</item>
+
+		<item>
 			<title>Version 3.0.2.0</title>
 			<description><![CDATA[
 				<div style="font-family: 'Lucida Grande', Arial, sans-serif; font-size: 9pt; padding: 3px;">
@@ -19,7 +42,7 @@
 					</div>
 				</div>
 			]]></description>
- 			<pubDate>Wed, 20 Feb 2014 16:11:30 -0400</pubDate>
+ 			<pubDate>Wed, 20 Feb 2014 16:11:00 -0400</pubDate>
 			<enclosure url="http://update.oris4.com/Oris4Sync.3.0.2.0.exe"
 				sparkle:version="3.0.2.0"
 				length="2541803"
@@ -41,7 +64,7 @@
 					</div>
 				</div>
 			]]></description>
- 			<pubDate>Thu, 20 Feb 2014 16:10:01 -0400</pubDate>
+ 			<pubDate>Thu, 20 Feb 2014 16:10:00 -0400</pubDate>
 			<enclosure url="http://update.oris4.com/Oris4Sync.3.0.1.0.exe"
 				sparkle:version="3.0.1.0"
 				length="2541821"
