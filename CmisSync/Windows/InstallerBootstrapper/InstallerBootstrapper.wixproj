@@ -79,7 +79,7 @@
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <Target Name="BeforeBuild">
-    <GetAssemblyIdentity AssemblyFiles="..\..\..\CmisSync.Lib\bin\$(Platform)\$(Configuration)\CmisSync.Lib.dll">
+    <GetAssemblyIdentity AssemblyFiles="..\bin\$(Platform)\$(Configuration)\Oris4Sync.exe">
       <Output TaskParameter="Assemblies" ItemName="AssemblyVersion" />
     </GetAssemblyIdentity>
     <PropertyGroup>
@@ -87,7 +87,7 @@
     </PropertyGroup>
   </Target>
 	<Target Name="AfterBuild">
-    <GetAssemblyIdentity AssemblyFiles="..\..\..\CmisSync.Lib\bin\$(Platform)\$(Configuration)\CmisSync.Lib.dll">
+    <GetAssemblyIdentity AssemblyFiles="..\bin\$(Platform)\$(Configuration)\Oris4Sync.exe">
       <Output TaskParameter="Assemblies" ItemName="AssemblyVersion" />
     </GetAssemblyIdentity>
     <Copy SourceFiles=".\bin\$(Configuration)\$(OutputName).exe" DestinationFiles=".\bin\$(Configuration)\$(OutputName).%(AssemblyVersion.Version).exe" />

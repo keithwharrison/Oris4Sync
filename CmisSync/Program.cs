@@ -24,6 +24,7 @@ using log4net;
 using log4net.Config;
 using CmisSync.Lib.Sync;
 using System.Net;
+using System.Reflection;
 
 [assembly: CLSCompliant(true)]
 
@@ -82,7 +83,7 @@ namespace CmisSync
                     "Oris4 Sync is a collaboration and sharing tool that is" + n +
                     "designed to keep things simple and to stay out of your way." + n +
                     n +
-                    "Version: " + CmisSync.Lib.Backend.Version + n +
+                    "Version: " + Assembly.GetExecutingAssembly().GetName().Version.ToString() + n +
                     "Copyright (C) 2010 Hylke Bons" + n +
                     "This program comes with ABSOLUTELY NO WARRANTY." + n +
                     n +

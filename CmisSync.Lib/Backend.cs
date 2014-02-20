@@ -24,38 +24,36 @@ namespace CmisSync.Lib
     /// <summary>
     /// Information about the version of CmisSync.Lib and the version of the operating system.
     /// </summary>
-    public static class Backend {
-
-        /// <summary>
-        /// Version of CmisSync.Lib
-        /// It is also used as the CmisSync version.
-        /// </summary>
-        public static string Version {
-            get {
-                return String.Empty + Assembly.GetExecutingAssembly ().GetName ().Version;
-            }
-        }
-
-
+    public static class Backend
+    {
         /// <summary>
         /// This fixes the PlatformID enumeration for MacOSX in Environment.OSVersion.Platform,
         /// which is intentionally broken in Mono for historical reasons
         /// </summary>
-        public static PlatformID Platform {
-            get {
+        public static PlatformID Platform
+        {
+            get
+            {
                 IntPtr buf = IntPtr.Zero;
 
-                try {
-                    buf = Marshal.AllocHGlobal (8192);
+                try
+                {
+                    buf = Marshal.AllocHGlobal(8192);
 
-                    if (uname (buf) == 0 && Marshal.PtrToStringAnsi (buf) == "Darwin")
+                    if (uname(buf) == 0 && Marshal.PtrToStringAnsi(buf) == "Darwin")
                         return PlatformID.MacOSX;
 
-                } catch (OutOfMemoryException) {
-                } catch (DllNotFoundException) {
-                } finally {
+                }
+                catch (OutOfMemoryException)
+                {
+                }
+                catch (DllNotFoundException)
+                {
+                }
+                finally
+                {
                     if (buf != IntPtr.Zero)
-                        Marshal.FreeHGlobal (buf);
+                        Marshal.FreeHGlobal(buf);
                 }
 
                 return Environment.OSVersion.Platform;
@@ -68,7 +66,7 @@ namespace CmisSync.Lib
         /// </summary>
         /// <param name="buf"></param>
         /// <returns></returns>
-        [DllImport ("libc")]
-        private static extern int uname (IntPtr buf);
+        [DllImport("libc")]
+        private static extern int uname(IntPtr buf);
     }
 }

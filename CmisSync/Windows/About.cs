@@ -39,11 +39,6 @@ namespace CmisSync {
         public AboutController Controller = new AboutController ();
 
         /// <summary>
-        /// Shows a message about software updates.
-        /// </summary>
-        private Label updates;
-
-        /// <summary>
         /// Constructor.
         /// </summary>
         public About ()
@@ -72,27 +67,6 @@ namespace CmisSync {
                     Hide ();
                 });
             };
-
-            Controller.NewVersionEvent += delegate (string new_version) {
-                Dispatcher.BeginInvoke((Action)delegate {
-                    this.updates.Content = "A newer version (" + new_version + ") is available!";
-                    this.updates.UpdateLayout ();
-                });
-            };
-
-            Controller.VersionUpToDateEvent += delegate {
-                Dispatcher.BeginInvoke ((Action) delegate {
-                    this.updates.Content = "You are running the latest version.";
-                    this.updates.UpdateLayout ();
-                });
-            };
-
-            Controller.CheckingForNewVersionEvent += delegate {
-                Dispatcher.BeginInvoke ((Action) delegate {
-                    //this.updates.Content = "Checking for updates...";
-                    this.updates.UpdateLayout ();
-                });
-            };
         }
 
         /// <summary>
@@ -114,12 +88,6 @@ namespace CmisSync {
                 Foreground = new SolidColorBrush (Color.FromRgb (135, 178, 227))
             };
 
-            this.updates = new Label () {
-                Content    = "Please check for updates at oris4.com", //"Checking for updates...",
-                FontSize   = 11,
-                Foreground = new SolidColorBrush (Color.FromRgb (135, 178, 227))
-            };
-            
             TextBlock credits = new TextBlock () {
                 FontSize     = 11,
                 Foreground = new SolidColorBrush (Color.FromRgb (135, 178, 227)),
@@ -145,10 +113,6 @@ namespace CmisSync {
             canvas.Children.Add (version);
             Canvas.SetLeft (version, 289);
             Canvas.SetTop (version, 92);
-            
-            canvas.Children.Add (this.updates);
-            Canvas.SetLeft (this.updates, 289);
-            Canvas.SetTop (this.updates, 109);
             
             canvas.Children.Add (credits);
             Canvas.SetLeft (credits, 294);
