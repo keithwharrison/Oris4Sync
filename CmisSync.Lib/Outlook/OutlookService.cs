@@ -1,4 +1,3 @@
-using AddinExpress.Outlook;
 using log4net;
 using Microsoft.Office.Interop.Outlook;
 using Microsoft.Win32;
@@ -139,130 +138,73 @@ namespace CmisSync.Lib.Outlook
         public static string saveAttachmentToTempFile(Attachment attachment)
         {
             string tempFilePath = Path.GetTempFileName();
-
-            SecurityManager securityManager = new SecurityManager();
-            try
-            {
-                securityManager.DisableOOMWarnings = true;
-                attachment.SaveAsFile(tempFilePath);
-            }
-            finally
-            {
-                securityManager.DisableOOMWarnings = false;
-            }
+            attachment.SaveAsFile(tempFilePath);
             return tempFilePath;
         }
 
         private static string getMessageId(MailItem mailItem)
         {
-            SecurityManager securityManager = new SecurityManager();
-            try
-            {
-                securityManager.DisableOOMWarnings = true;
-                PropertyAccessor propertyAccessor = mailItem.PropertyAccessor;
-                return (string)propertyAccessor.GetProperty(OutlookService.PR_INTERNET_MESSAGE_ID_W);
-            }
-            finally
-            {
-                securityManager.DisableOOMWarnings = false;
-            }
+            PropertyAccessor propertyAccessor = mailItem.PropertyAccessor;
+            return (string)propertyAccessor.GetProperty(OutlookService.PR_INTERNET_MESSAGE_ID_W);
         }
 
         private static string getInReplyTo(MailItem mailItem)
         {
-            SecurityManager securityManager = new SecurityManager();
-            try
+            PropertyAccessor propertyAccessor = mailItem.PropertyAccessor;
+            string inReplyTo = (string)propertyAccessor.GetProperty(OutlookService.PR_IN_REPLY_TO_ID_W);
+            if (!string.IsNullOrWhiteSpace(inReplyTo))
             {
-                securityManager.DisableOOMWarnings = true;
-                PropertyAccessor propertyAccessor = mailItem.PropertyAccessor;
-                string inReplyTo = (string)propertyAccessor.GetProperty(OutlookService.PR_IN_REPLY_TO_ID_W);
-                if (!string.IsNullOrWhiteSpace(inReplyTo))
-                {
-                    return inReplyTo;
-                }
-                return null;
+                return inReplyTo;
             }
-            finally
-            {
-                securityManager.DisableOOMWarnings = false;
-            }
+            return null;
         }
 
         private static string getReferences(MailItem mailItem)
         {
             /*
-            SecurityManager securityManager = new SecurityManager();
-            try
+            PropertyAccessor propertyAccessor = mailItem.PropertyAccessor;
+            string references = propertyAccessor.GetProperty(OutlookService.PR_INTERNET_REFERENCES_W); //TODO:: References
+            if (!string.IsNullOrWhiteSpace(references))
             {
-                securityManager.DisableOOMWarnings = true;
-                PropertyAccessor propertyAccessor = mailItem.PropertyAccessor;
-                string references = propertyAccessor.GetProperty(OutlookService.PR_INTERNET_REFERENCES_W); //TODO:: References
-                if (!string.IsNullOrWhiteSpace(references))
-                {
-                    return references;
-                }
-            */
-                return null;
-            /*
-            }
-            finally
-            {
-                securityManager.DisableOOMWarnings = false;
+                return references;
             }
             */
+            return null;
         }
 
         private static string getBody(MailItem mailItem)
         {
-            SecurityManager securityManager = new SecurityManager();
-            try
+            switch (mailItem.BodyFormat)
             {
-                securityManager.DisableOOMWarnings = true;
-                switch (mailItem.BodyFormat)
-                {
-                    case OlBodyFormat.olFormatHTML:
-                        return mailItem.HTMLBody;
-                    case OlBodyFormat.olFormatRichText:
-                    case OlBodyFormat.olFormatPlain:
-                    case OlBodyFormat.olFormatUnspecified:
-                    default:
-                        return mailItem.Body;
-                }
-            }
-            finally
-            {
-                securityManager.DisableOOMWarnings = false;
+                case OlBodyFormat.olFormatHTML:
+                    return mailItem.HTMLBody;
+                case OlBodyFormat.olFormatRichText:
+                case OlBodyFormat.olFormatPlain:
+                case OlBodyFormat.olFormatUnspecified:
+                default:
+                    return mailItem.Body;
             }
         }
 
         private static List<EmailContact> getEmailContacts(MailItem mailItem)
         {
-            SecurityManager securityManager = new SecurityManager();
-            try
+            List<EmailContact> contacts = new List<EmailContact>();
+
+            //Sender...
+            contacts.Add(new EmailContact()
             {
-                securityManager.DisableOOMWarnings = true;
-                List<EmailContact> contacts = new List<EmailContact>();
+                emailAddress = mailItem.SenderEmailAddress,
+                emailContactType = "From",
+            });
 
-                //Sender...
-                contacts.Add(new EmailContact()
-                {
-                    emailAddress = mailItem.SenderEmailAddress,
-                    emailContactType = "From",
-                });
-
-                //Recipients...
-                Recipients recipients = mailItem.Recipients;
-                foreach (Recipient recipient in recipients)
-                {
-                    contacts.Add(getEmailRecipient(recipient));
-                }
-
-                return contacts;
-            }
-            finally
+            //Recipients...
+            Recipients recipients = mailItem.Recipients;
+            foreach (Recipient recipient in recipients)
             {
-                securityManager.DisableOOMWarnings = false;
+                contacts.Add(getEmailRecipient(recipient));
             }
+
+            return contacts;
         }
 
         private static EmailContact getEmailRecipient(Recipient recipient)
