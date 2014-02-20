@@ -234,7 +234,7 @@ namespace CmisSync
                 //EnableSystemProfiling = true,
                 //SystemProfileUrl = new Uri("http://update.oris4.com/profile.html"),
             };
-
+            autoUpdater.ApplicationWindowIcon = UIHelpers.GetIcon("classic_folder_web");
             autoUpdater.StartLoop(true, true);
         }
 

@@ -331,8 +331,8 @@ Copy "$(SolutionDir)..\..\extras\sqlite-netFx40-static-binary-x64-2010-1.0.86.0\
 Copy "$(SolutionDir)..\..\CmisSync.Lib\StaticDefines.cs" "$(SolutionDir)..\..\CmisSync.Lib\Defines.cs"</PreBuildEvent>
   </PropertyGroup>
   <Target Name="Deploy">
-    <MSBuild Projects="Installer" Targets="Build" Properties="Configuration=Release;Platform=x86"/>
-    <MSBuild Projects="Installer" Targets="Build" Properties="Configuration=Release;Platform=x64"/>
-    <MSBuild Projects="InstallerBootstrapper" Targets="Build" Properties="Configuration=Release;Platform=x86"/>
-	</Target>
+    <MSBuild Projects="Installer" Targets="Build" Properties="Configuration=Release;Platform=x86" />
+    <MSBuild Projects="Installer" Targets="Build" Properties="Configuration=Release;Platform=x64" />
+    <MSBuild Projects="InstallerBootstrapper" Targets="Build" Properties="Configuration=Release;Platform=x86" />
+  </Target>
 </Project>
