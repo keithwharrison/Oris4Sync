@@ -15,6 +15,7 @@
 //   along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
+using AppLimit.NetSparkle;
 using CmisSync.Lib;
 using log4net;
 using System;
@@ -33,7 +34,6 @@ namespace CmisSync
         /// Log.
         /// </summary>
         protected static readonly ILog Logger = LogManager.GetLogger(typeof(ControllerBase));
-
 
         /// <summary>
         /// Whether it is the first time that CmisSync is being run.
@@ -188,6 +188,11 @@ namespace CmisSync
         private Object repo_lock = new Object();
         private Object check_repos_lock = new Object();
 
+        /// <summary>
+        /// Auto updater.
+        /// </summary>
+        private Sparkle autoUpdater;
+
 
         /// <summary>
         /// Constructor.
@@ -222,6 +227,15 @@ namespace CmisSync
             }
 
             folderLock = new FolderLock(FoldersPath);
+
+            autoUpdater = new Sparkle("http://update.oris4.com/versioninfo.xml")
+            {
+                //ShowDiagnosticWindow = true,
+                //EnableSystemProfiling = true,
+                //SystemProfileUrl = new Uri("http://update.oris4.com/profile.html"),
+            };
+
+            autoUpdater.StartLoop(true, true);
         }
 
 
@@ -530,7 +544,6 @@ namespace CmisSync
             AlertNotificationRaised(Properties_Resources.Oris4Sync + " " + title, message);
         }
 
-
         /// <summary>
         /// Quit CmisSync.
         /// </summary>
@@ -540,6 +553,8 @@ namespace CmisSync
                 repo.Dispose();
 
             folderLock.Dispose();
+
+            autoUpdater.Dispose();
 
             Logger.Info("Exiting.");
             Environment.Exit(0);

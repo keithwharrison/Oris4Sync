@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" >
 
-  <Product Name="Oris4 Sync" Id="C7E5E77C-EC7B-4CF2-8B25-A8A69A8E2A55" UpgradeCode="00CAC8B4-6592-4038-807D-846959F4BD69"
-    Language="1033" Codepage="1252" Version="$(var.BuildVersion)" Manufacturer="2nd Act Innovations">
+  <?define Manufacturer = "2nd Act Innovations" ?>  
+  
+  <Product Name="Oris4 Sync" Id="*" UpgradeCode="00CAC8B4-6592-4038-807D-846959F4BD69"
+    Language="1033" Codepage="1252" Version="$(var.BuildVersion)" Manufacturer="$(var.Manufacturer)">
 
-    <Package Id="*" Keywords="Installer" Description="Oris4 Sync Setup" Manufacturer="Oris4Sync"
+    <Package Id="*" Keywords="Installer" Description="Oris4 Sync Setup" Manufacturer="$(var.Manufacturer)"
       InstallerVersion="100" Languages="1033" Compressed="yes" SummaryCodepage="1252" InstallScope="perMachine" />
 
     <PropertyRef Id="NETFRAMEWORK40CLIENT" />
@@ -32,10 +34,12 @@
         <Directory Id="Oris4ProgramsFolder" Name="Oris4 Sync"/>
       </Directory>
       <Directory Id="DesktopFolder"/>
+      <!-- TODO: Commented out until we can figure out how to keep the data on upgrades
       <Directory Id="AppDataFolder">
         <Directory Id="Oris4AppDataFolder" Name="oris4sync"/>
       </Directory>
       <Directory Id="StartupFolder"/>
+      -->
     </Directory>
 
     <DirectoryRef Id="INSTALLDIR">
@@ -52,6 +56,7 @@
         <File Id="log4net.dll" Name="log4net.dll" Source="$(var.CmisSync.TargetDir)\log4net.dll" DiskId="1" />
         <File Id="Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" Source="$(var.CmisSync.TargetDir)\Newtonsoft.Json.dll" DiskId="1" />
         <File Id="System.Data.SQLite.dll" Name="System.Data.SQLite.dll" Source="$(var.CmisSync.TargetDir)\System.Data.SQLite.dll" DiskId="1" />
+        <File Id="AppLimit.NetSparkle.Net40.dll" Name="AppLimit.NetSparkle.Net40.dll" Source="$(var.CmisSync.TargetDir)\AppLimit.NetSparkle.Net40.dll" DiskId="1" />
         <File Id="cmissync_app.ico" Name="cmissync.ico" Source="$(var.CmisSync.ProjectDir)\Pixmaps\cmissync-app.ico" DiskId="1" />
       </Component>
     </DirectoryRef>
@@ -113,6 +118,13 @@
     </DirectoryRef>
     -->
 
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="AutoUpdate" Guid="FDCFB9FA-AA81-4D31-81BC-3B715D213E2F">
+        <RemoveRegistryKey Id="AutoUpdateCleanup" Root="HKCU" Key="Software\$(var.Manufacturer)\Oris4Sync\AutoUpdate" Action="removeOnUninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\$(var.Manufacturer)\Oris4Sync" Name="AutoUpdateInstalled" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+
     <DirectoryRef Id="Oris4ProgramsFolder">
       <Component Id="StartMenuShortcut" Guid="FCFFE059-4D1F-4E0C-AFE7-8F5B77390EE3">
         <Shortcut Id="ApplicationStartMenuShortcut"
@@ -120,7 +132,7 @@
                   Target="[INSTALLDIR]Oris4Sync.exe"
                   WorkingDirectory="INSTALLDIR"/>
         <RemoveFolder Id="Oris4ProgramsFolder" On="uninstall"/>
-        <RegistryValue Root="HKCU" Key="Software\Oris4Sync" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes"/>
+        <RegistryValue Root="HKCU" Key="Software\$(var.Manufacturer)\Oris4Sync" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
     </DirectoryRef>
 
@@ -131,24 +143,27 @@
                   Target="[INSTALLDIR]Oris4Sync.exe"
                   WorkingDirectory="INSTALLDIR"/>
         <RemoveFile Id="DesktopFolder" Name="Oris4 Sync.lnk" On="uninstall"/>
-        <RegistryValue Root="HKCU" Key="Software\Oris4Sync" Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes"/>
+        <RegistryValue Root="HKCU" Key="Software\$(var.Manufacturer)\Oris4Sync" Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
     </DirectoryRef>
 
+
+    <!-- TODO: Commented out until we can figure out how to keep the data on upgrades
     <DirectoryRef Id="Oris4AppDataFolder">
       <Component Id="Oris4AppData" DiskId="1" Guid="C75496CB-DF13-42C7-8520-DB4574411B14">
-        <RemoveFile Id="CleanDataDirectory" Name="*" On="both"/>
-        <RemoveFolder Id="RemoveDataDirectory" On="both"/>
-        <RegistryValue Root="HKCU" Key="Software\Oris4Sync" Name="Oris4AppData" Type="integer" Value="1" KeyPath="yes"/>
+        <RemoveFile Id="CleanDataDirectory" Name="*" On="uninstall"/>
+        <RemoveFolder Id="RemoveDataDirectory" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\$(var.Manufacturer)\Oris4Sync" Name="Oris4AppData" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="StartupFolder">
       <Component Id="StartupMenuItem" Guid="46C6E4A6-74C4-4D1B-AD7E-38F2F92144F6">
         <RemoveFile Id="RemoveStartupItem" Name="Oris4 Sync.lnk" On="uninstall"/>
-        <RegistryValue Root="HKCU" Key="Software\Oris4Sync" Name="StartupMenuItem" Type="integer" Value="1" KeyPath="yes"/>
+        <RegistryValue Root="HKCU" Key="Software\$(var.Manufacturer)\Oris4Sync" Name="StartupMenuItem" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
     </DirectoryRef>
+    -->
 
     <Feature Id="Oris4SyncFeature" Title="Oris4Sync" Description="Oris4Sync" Level="1" AllowAdvertise="no">
       <ComponentRef Id="Oris4Sync.exe" />
@@ -156,10 +171,13 @@
       <ComponentRef Id="Libraries" />
       <ComponentRef Id="COMP_x86" />
       <ComponentRef Id="COMP_x64" />
+      <ComponentRef Id="AutoUpdate" />
       <ComponentRef Id="StartMenuShortcut" />
       <ComponentRef Id="DesktopShortcut" />
+      <!-- TODO: Commented out until we can figure out how to keep the data on upgrades
       <ComponentRef Id="Oris4AppData" />
       <ComponentRef Id="StartupMenuItem" />
+      -->
       <ComponentRef Id="localeComponentDE" />
       <ComponentRef Id="localeComponentES" />
       <ComponentRef Id="localeComponentFR" />
