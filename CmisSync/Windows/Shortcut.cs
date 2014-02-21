@@ -1,130 +1,82 @@
-//   CmisSync, a collaboration and sharing tool.
-//   Copyright (C) 2010  Hylke Bons <hylkebons@gmail.com>
-//
-//   This program is free software: you can redistribute it and/or modify
-//   it under the terms of the GNU General Public License as published by
-//   the Free Software Foundation, either version 3 of the License, or
-//   (at your option) any later version.
-//
-//   This program is distributed in the hope that it will be useful,
-//   but WITHOUT ANY WARRANTY; without even the implied warranty of
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-//   GNU General Public License for more details.
-//
-//   You should have received a copy of the GNU General Public License
-//   along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-
+using log4net;
 using System;
-using System.ComponentModel;
-using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using System.Windows.Forms;
 
-namespace CmisSync {
+namespace CmisSync
+{
 
     /// <summary>
     /// Create a Windows shortcut for CmisSync.
     /// </summary>
-    public class Shortcut : IDisposable
+    public static class Shortcut
     {
-        private IShellLink link;
-        private string description;
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(Shortcut));
 
         /// <summary>
-        /// Description.
+        /// Create shortcut.
         /// </summary>
-        public string Description { get { return description; } set { description = value; } }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        public Shortcut()
+        public static void Create(string target_path, string file_path)
         {
+            try
+            {
+                Type t = Type.GetTypeFromCLSID(new Guid("72C24DD5-D70A-438B-8A42-98424B88AFB8")); //Windows Script Host Shell Object
+                dynamic shell = Activator.CreateInstance(t);
+                try
+                {
+                    var lnk = shell.CreateShortcut(file_path);
+                    try
+                    {
+                        lnk.TargetPath = target_path;
+                        lnk.Save();
+                    }
+                    finally
+                    {
+                        Marshal.FinalReleaseComObject(lnk);
+                    }
+                }
+                finally
+                {
+                    Marshal.FinalReleaseComObject(shell);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(String.Format("Could not create shortcut: {0} -> {1}", file_path, target_path), e);
+            }
         }
 
         /// <summary>
         /// Create shortcut.
         /// </summary>
-        public void Create(string file_path, string target_path)
+        public static void Create(string target_path, string file_path, string icofile, int icoidx)
         {
-            link = (IShellLink)new ShellLink();
-
-            // Setup shortcut information.
-            link.SetDescription(Description);
-            link.SetPath(file_path);
-
-            // Save the shortcut information.
-            IPersistFile file = (IPersistFile)link;
-            file.Save(target_path, false);
-        }
-
-        /// <summary>
-        /// Create shortcut.
-        /// </summary>
-        public void Create(string file_path, string target_path, string icofile, int icoidx)
-        {
-            link = (IShellLink)new ShellLink();
-
-            // Setup shortcut information.
-            link.SetDescription(Description);
-            link.SetPath(file_path);
-            link.SetIconLocation(icofile, icoidx);
-
-            // Save the shortcut information.
-            IPersistFile file = (IPersistFile)link;
-            file.Save(target_path, false);
-        }
-
-        /// <summary>
-        /// Dispose object.
-        /// </summary>
-        public void Dispose()
-        {
-            if (this.link == null)
-                return;
-
-            Marshal.ReleaseComObject(this.link);
-            this.link = null;
-        }
-
-        /// <summary>
-        /// Internal class for the link.
-        /// </summary>
-        [ComImport]
-        [Guid("00021401-0000-0000-C000-000000000046")]
-        internal class ShellLink
-        {
-        }
-
-        /// <summary>
-        /// Internal interface for the link.
-        /// </summary>
-        [ComImport]
-        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        [Guid("000214F9-0000-0000-C000-000000000046")]
-        internal interface IShellLink
-        {
-            void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszFile, int cchMaxPath, out IntPtr pfd, int fFlags);
-            void GetIDList(out IntPtr ppidl);
-            void SetIDList(IntPtr pidl);
-            void GetDescription([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszName, int cchMaxName);
-            void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string pszName);
-            void GetWorkingDirectory([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszDir, int cchMaxPath);
-            void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string pszDir);
-            void GetArguments([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszArgs, int cchMaxPath);
-            void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string pszArgs);
-            void GetHotkey(out short pwHotkey);
-            void SetHotkey(short wHotkey);
-            void GetShowCmd(out int piShowCmd);
-            void SetShowCmd(int iShowCmd);
-            void GetIconLocation([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszIconPath, int cchIconPath, out int piIcon);
-            void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string pszIconPath, int iIcon);
-            void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string pszPathRel, int dwReserved);
-            void Resolve(IntPtr hwnd, int fFlags);
-            void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
+            try
+            {
+                Type t = Type.GetTypeFromCLSID(new Guid("72C24DD5-D70A-438B-8A42-98424B88AFB8")); //Windows Script Host Shell Object
+                dynamic shell = Activator.CreateInstance(t);
+                try
+                {
+                    var lnk = shell.CreateShortcut(file_path);
+                    try
+                    {
+                        lnk.TargetPath = target_path;
+                        lnk.IconLocation = icofile + ", " + icoidx;
+                        lnk.Save();
+                    }
+                    finally
+                    {
+                        Marshal.FinalReleaseComObject(lnk);
+                    }
+                }
+                finally
+                {
+                    Marshal.FinalReleaseComObject(shell);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(String.Format("Could not create shortcut: {0} -> {1} (icon: {2}, {3})", file_path, target_path, icofile, icoidx), e);
+            }
         }
     }
 }
