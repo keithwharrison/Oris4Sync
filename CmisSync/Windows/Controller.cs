@@ -56,7 +56,7 @@ namespace CmisSync
         public override void CreateStartupItem()
         {
             string startup_folder_path = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
-            string shortcut_path = Path.Combine(startup_folder_path, "Oris4.lnk");
+            string shortcut_path = Path.Combine(startup_folder_path, "Oris4 Sync.lnk");
 
             if (File.Exists(shortcut_path))
                 File.Delete(shortcut_path);
@@ -74,7 +74,7 @@ namespace CmisSync
         {
             string user_profile_path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             string links_path = Path.Combine(user_profile_path, "Links");
-            string shortcut_path = Path.Combine(links_path, "Oris4 Sync.lnk");
+            string shortcut_path = Path.Combine(links_path, "Oris4.lnk");
 
             if (!Directory.Exists(links_path))
             {
