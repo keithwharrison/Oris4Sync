@@ -74,13 +74,19 @@ namespace CmisSync
         public override void AddToBookmarks()
         {
             string user_profile_path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string shortcut_path = Path.Combine(user_profile_path, "Links", "Oris4 Sync.lnk");
+            string links_path = Path.Combine(user_profile_path, "Links");
+            string shortcut_path = Path.Combine(links_path, "Oris4 Sync.lnk");
+
+            if (!Directory.Exists(links_path))
+            {
+                Logger.Warn("Could not create bookmark, Links folder not found");
+                return;
+            }
 
             if (File.Exists(shortcut_path))
                 File.Delete(shortcut_path);
 
             Shortcut shortcut = new Shortcut();
-
             shortcut.Create(FoldersPath, shortcut_path, Forms.Application.ExecutablePath, 0);
         }
 
