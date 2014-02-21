@@ -1,3 +1,4 @@
+using AddinExpress.Outlook;
 using log4net;
 using Microsoft.Office.Interop.Outlook;
 using stdole;
@@ -13,6 +14,7 @@ namespace CmisSync.Lib.Outlook
         private Application application;
         private NameSpace nameSpace;
         private MAPIFolder defaultFolder;
+        private SecurityManager securityManager;
 
         public Application Application 
         {
@@ -37,7 +39,21 @@ namespace CmisSync.Lib.Outlook
                 return defaultFolder;
             }
         }
-         
+
+        public SecurityManager SecurityManager
+        {
+            get
+            {
+                if (securityManager == null)
+                {
+                    securityManager = new SecurityManager();
+                    securityManager.ConnectTo(Application);
+                    OutlookService.checkSecurityManager(securityManager);
+                }
+                return securityManager;
+            }
+        }
+
         public OutlookSession()
         {
             application = OutlookService.getApplication();
@@ -47,30 +63,32 @@ namespace CmisSync.Lib.Outlook
 
         public void close()
         {
+            if (securityManager != null && securityManager.DisableOOMWarnings)
+            {
+                //Ensure OOM warnings are enabled at end of session.
+                Logger.Warn("Security Manager OOM Warnings Left Disabled at end of session");
+                securityManager.DisableOOMWarnings = false;
+            }
             application = null;
             nameSpace = null;
             defaultFolder = null;
+            securityManager = null;
         }
 
         public void sendAndRecieve()
         {
-            OutlookService.sendAndRecieve(nameSpace);
+            OutlookService.sendAndRecieve(NameSpace);
         }
 
         public MAPIFolder getFolderFromID(string entryID)
         {
-            return nameSpace.GetFolderFromID(entryID);
-        }
-
-        public string getDefaultStoreID()
-        {
-            return Utils.Sha256Data(nameSpace.DefaultStore.StoreID);
+            return NameSpace.GetFolderFromID(entryID);
         }
 
         public List<OutlookFolder> getFolderTree()
         {
             List<OutlookFolder> root = new List<OutlookFolder>();
-            Folders folders = nameSpace.Folders;
+            Folders folders = NameSpace.Folders;
             fillFolderTree(root, folders);
             return root;
         }
@@ -106,7 +124,7 @@ namespace CmisSync.Lib.Outlook
             while (currentElement < pathElements.Length)
             {
                 string pathElement = pathElements[currentElement];
-                Folders folders = currentFolder != null ? currentFolder.Folders : nameSpace.Folders;
+                Folders folders = currentFolder != null ? currentFolder.Folders : NameSpace.Folders;
                 Folder foundFolder = null;
                 foreach (Folder folder in folders)
                 {
@@ -134,17 +152,17 @@ namespace CmisSync.Lib.Outlook
 
         public Email getEmail(MAPIFolder folder, MailItem mailItem)
         {
-            return OutlookService.getEmail(folder, mailItem);
+            return OutlookService.getEmail(SecurityManager, folder, mailItem);
         }
         
         public List<EmailAttachment> getEmailAttachments(MailItem mailItem, Email email)
         {
-            return OutlookService.getEmailAttachments(mailItem, email);
+            return OutlookService.getEmailAttachments(SecurityManager, mailItem, email);
         }
 
         public EmailAttachment getEmailAttachment(Attachment attachment, Email email)
         {
-            return OutlookService.getEmailAttachment(attachment, email);
+            return OutlookService.getEmailAttachment(SecurityManager, attachment, email);
         }
     }
 }

@@ -615,8 +615,8 @@ namespace CmisSync
         public bool isOutlookIntegrationAvailable()
         {
             //TODO: Check server outlook compatibility?
-            return OutlookService.checkForOutlookInstallation() &&
-                OutlookService.checkForProfile();
+            return OutlookService.isOutlookInstalled() &&
+                OutlookService.isOutlookProfileAvailable();
         }
 
         /// <summary>
