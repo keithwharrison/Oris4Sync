@@ -3,9 +3,13 @@
 <?if $(var.Platform) = x64 ?>
 <?define Win64 = "yes" ?>
 <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+<?define PlatformCommonFilesFolder = "CommonFiles64Folder" ?>
+<?define SecmanDLL = "secman64.DLL" ?>
 <?else ?>
 <?define Win64 = "no" ?>
 <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+<?define PlatformCommonFilesFolder = "CommonFilesFolder" ?>
+<?define SecmanDLL = "secman.DLL" ?>
 <?endif ?>
 <?define Manufacturer = "2nd Act Innovations" ?>  
 
@@ -34,8 +38,10 @@
           <Directory Id="localeDirectoryJA" Name="ja"/>
           <Directory Id="localeDirectoryUK" Name="uk"/>
           <!--<Directory Id="localeDirectoryTLH" Name="tlh-KX"/>-->
-          <Directory Id="PLUGINS_DIR" Name="plugins"/>
         </Directory>
+      </Directory>
+      <Directory Id="$(var.PlatformCommonFilesFolder)">
+        <Directory Id="OutlookSecurityManager" Name="Outlook Security Manager"/>
       </Directory>
       <Directory Id="ProgramMenuFolder">
         <Directory Id="Oris4ProgramsFolder" Name="Oris4 Sync"/>
@@ -66,6 +72,7 @@
         <File Id="System.Data.SQLite.dll" Name="System.Data.SQLite.dll" Source="$(var.CmisSync.TargetDir)\System.Data.SQLite.dll" DiskId="1" />
         <File Id="SQLite.Interop.dll" Name="SQLite.Interop.dll" Source="$(var.CmisSync.TargetDir)\$(var.CmisSync.Platform)\SQLite.Interop.dll" DiskId="1" />
         <File Id="AppLimit.NetSparkle.Net40.dll" Name="AppLimit.NetSparkle.Net40.dll" Source="$(var.CmisSync.TargetDir)\AppLimit.NetSparkle.Net40.dll" DiskId="1" />
+        <File Id="SecurityManager.2005.dll" Name="SecurityManager.2005.dll" Source="C:\Program Files (x86)\Add-in Express\Security Manager for Microsoft Outlook .NET\Bin\SecurityManager.2005.dll" DiskId="1" />
         <File Id="cmissync_app.ico" Name="cmissync.ico" Source="$(var.CmisSync.ProjectDir)\Pixmaps\cmissync-app.ico" DiskId="1" />
       </Component>
     </DirectoryRef>
@@ -160,6 +167,27 @@
     </DirectoryRef>
     -->
 
+    <!-- Outlook Security Manager COM DLL Registration -->
+    <DirectoryRef Id="OutlookSecurityManager">
+      <Component Id="OutlookSecurityManagerComponent" Guid="{0D1B9D72-34FA-4DF2-9E80-9622FD284EFB}">
+        <File Id="OutlookSecurityManagerDLL" KeyPath="yes" Source="C:\Program Files (x86)\Add-in Express\Security Manager for Microsoft Outlook .NET\Redistributables\$(var.SecmanDLL)">
+          <Class Id="{66EEF543-A9AC-4A9D-AA3C-1ED148AC8EEE}" Context="InprocServer32" Description="PSFactoryBuffer" ThreadingModel="both" />
+          <TypeLib Id="{11549FE4-7C5A-4C17-9FC3-56FC5162A994}" Description="secman 1.0 Type Library" HelpDirectory="OutlookSecurityManager" Language="0" MajorVersion="1" MinorVersion="0">
+            <AppId Description="secman" Id="{4D076AB4-7562-427A-B5D2-BD96E19DEE56}">
+              <Class Id="{826D7151-8D99-434B-8540-082B8C2AE556}" Context="InprocServer32" Description="OutlookSecurityManager Class" ThreadingModel="apartment" Programmable="yes">
+                <ProgId Id="secman.OutlookSecurityManager.1" Description="OutlookSecurityManager Class">
+                  <ProgId Id="secman.OutlookSecurityManager" Description="OutlookSecurityManager Class" />
+                </ProgId>
+              </Class>
+            </AppId>
+            <Interface Id="{66EEF543-A9AC-4A9D-AA3C-1ED148AC8EEE}" Name="IOutlookSecurityManager" ProxyStubClassId32="{66EEF543-A9AC-4A9D-AA3C-1ED148AC8EEE}" NumMethods="11" />
+            <Interface Id="{66EEF543-A9AC-4A9D-AA3C-1ED148AC8FFE}" Name="IOutlookSecurityManager2" ProxyStubClassId32="{66EEF543-A9AC-4A9D-AA3C-1ED148AC8EEE}" NumMethods="12" />
+          </TypeLib>
+        </File>
+        <RegistryValue Root="HKCR" Key="AppID\$(var.SecmanDLL)" Name="AppID" Value="{4D076AB4-7562-427A-B5D2-BD96E19DEE56}" Type="string" Action="write" />
+      </Component>
+    </DirectoryRef>
+
     <Feature Id="Oris4SyncFeature" Title="Oris4Sync" Description="Oris4Sync" Level="1" AllowAdvertise="no">
       <ComponentRef Id="Oris4Sync.exe" />
       <ComponentRef Id="Oris4Sync.Console.exe" />
@@ -176,7 +204,7 @@
       <ComponentRef Id="localeComponentFR" />
       <ComponentRef Id="localeComponentJA" />
       <ComponentRef Id="localeComponentUK" />
-      <!--<ComponentGroupRef Id="pluginsComponentGroup" />-->
+      <ComponentRef Id="OutlookSecurityManagerComponent" />
     </Feature>
 
     <WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
