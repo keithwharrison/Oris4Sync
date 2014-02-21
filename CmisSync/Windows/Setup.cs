@@ -1112,19 +1112,6 @@ namespace CmisSync
                                     Height = 340,
                                 };
 
-                                tabControl.Items.Add(new TabItem()
-                                {
-                                    Header = Properties_Resources.General,
-                                    Content = generalCanvas,
-                                });
-
-                                tabControl.Items.Add(new TabItem()
-                                {
-                                    Name = OUTLOOK,
-                                    Header = Properties_Resources.Outlook,
-                                    Content = outlookCanvas,
-                                });
-
                                 tabControl.SelectionChanged += delegate(object sender, SelectionChangedEventArgs e)
                                 {
                                     if (OUTLOOK.Equals(((TabItem)tabControl.SelectedItem).Name) &&
@@ -1150,6 +1137,19 @@ namespace CmisSync
 
                                 if (Controller.isOutlookIntegrationAvailable())
                                 {
+                                    tabControl.Items.Add(new TabItem()
+                                    {
+                                        Header = Properties_Resources.General,
+                                        Content = generalCanvas,
+                                    });
+
+                                    tabControl.Items.Add(new TabItem()
+                                    {
+                                        Name = OUTLOOK,
+                                        Header = Properties_Resources.Outlook,
+                                        Content = outlookCanvas,
+                                    });
+
                                     //Display tabs when outlook is available
                                     ContentCanvas.Children.Add(tabControl);
                                     Canvas.SetTop(tabControl, 10);
