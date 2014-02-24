@@ -42,6 +42,10 @@
     <Compile Include="Bundle.wxs" />
   </ItemGroup>
   <ItemGroup>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
     <WixExtension Include="WixNetFxExtension">
       <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
       <Name>WixNetFxExtension</Name>
@@ -86,11 +90,11 @@
       <DefineConstants>BuildVersion=%(AssemblyVersion.Version)</DefineConstants>
     </PropertyGroup>
   </Target>
-	<Target Name="AfterBuild">
+  <Target Name="AfterBuild">
     <GetAssemblyIdentity AssemblyFiles="..\bin\$(Platform)\$(Configuration)\Oris4Sync.exe">
       <Output TaskParameter="Assemblies" ItemName="AssemblyVersion" />
     </GetAssemblyIdentity>
     <Copy SourceFiles=".\bin\$(Configuration)\$(OutputName).exe" DestinationFiles=".\bin\$(Configuration)\$(OutputName).%(AssemblyVersion.Version).exe" />
     <Delete Files=".\bin\$(Configuration)\$(OutputName).exe" />
-	</Target>
+  </Target>
 </Project>

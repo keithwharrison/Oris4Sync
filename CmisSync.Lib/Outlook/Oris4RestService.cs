@@ -6,7 +6,7 @@ using System.Net;
 
 namespace CmisSync.Lib.Outlook
 {
-    public class Oris4RestService
+    public static class Oris4RestService
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(Oris4RestService));
 

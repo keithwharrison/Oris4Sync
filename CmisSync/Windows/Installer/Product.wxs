@@ -121,7 +121,7 @@
     -->
 
     <DirectoryRef Id="INSTALLDIR">
-      <Component Id="AutoUpdate" Guid="FDCFB9FA-AA81-4D31-81BC-3B715D213E2F">
+      <Component Id="AutoUpdate" Guid="FDCFB9FA-AA81-4D31-81BC-3B715D213E2F" Win64="$(var.Win64)">
         <RemoveRegistryKey Id="AutoUpdateCleanup" Root="HKCU" Key="Software\$(var.Manufacturer)\Oris4Sync\AutoUpdate" Action="removeOnUninstall"/>
         <RegistryValue Root="HKCU" Key="Software\$(var.Manufacturer)\Oris4Sync" Name="AutoUpdateInstalled" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
@@ -169,7 +169,7 @@
 
     <!-- Outlook Security Manager COM DLL Registration -->
     <DirectoryRef Id="OutlookSecurityManager">
-      <Component Id="OutlookSecurityManagerComponent" Guid="{0D1B9D72-34FA-4DF2-9E80-9622FD284EFB}">
+      <Component Id="OutlookSecurityManagerComponent" Guid="{0D1B9D72-34FA-4DF2-9E80-9622FD284EFB}" Win64="$(var.Win64)">
         <File Id="OutlookSecurityManagerDLL" KeyPath="yes" Source="C:\Program Files (x86)\Add-in Express\Security Manager for Microsoft Outlook .NET\Redistributables\$(var.SecmanDLL)">
           <Class Id="{66EEF543-A9AC-4A9D-AA3C-1ED148AC8EEE}" Context="InprocServer32" Description="PSFactoryBuffer" ThreadingModel="both" />
           <TypeLib Id="{11549FE4-7C5A-4C17-9FC3-56FC5162A994}" Description="secman 1.0 Type Library" HelpDirectory="OutlookSecurityManager" Language="0" MajorVersion="1" MinorVersion="0">

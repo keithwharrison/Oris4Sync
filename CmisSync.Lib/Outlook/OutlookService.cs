@@ -10,9 +10,9 @@ using System.Text;
 
 namespace CmisSync.Lib.Outlook
 {
-    public class OutlookService
+    public static class OutlookService
     {
-        protected static readonly ILog Logger = LogManager.GetLogger(typeof(OutlookService));
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(OutlookService));
 
         public static string PR_INTERNET_MESSAGE_ID_W = "http://schemas.microsoft.com/mapi/proptag/0x1035001F";
         public static string PR_IN_REPLY_TO_ID_W = "http://schemas.microsoft.com/mapi/proptag/0x1042001F";
@@ -64,6 +64,81 @@ namespace CmisSync.Lib.Outlook
             return outlookVersionNumber != null &&
                 (Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles", null, "Key Exists") != null ||
                 Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Office\" + outlookVersionNumber + @"\Outlook\Profiles", null, "Key Exists") != null);
+        }
+
+        public static bool isOutlookSecurityManagerBitnessMatch()
+        {
+            if (!isOutlookInstalled())
+            {
+                return false;
+            }
+
+            if (isOutlookSecurityManager32Bit())
+            {
+                if (isOutlook32Bit())
+                {
+                    return true;
+                }
+                else
+                {
+                    Logger.Error("Outlook security manager mismatch - Security Manager: 32bit, Outlook: 64bit.  Please re-install Oris4Sync.");
+                    return false;
+                }
+            }
+            else if (isOutlookSecurityManager64Bit())
+            {
+                if (isOutlook64Bit())
+                {
+                    return true;
+                }
+                else
+                {
+                    Logger.Error("Outlook security manager mismatch - Security Manager: 64bit, Outlook: 32bit.  Please re-install Oris4Sync.");
+                    return false;
+                }
+            }
+            else
+            {
+                Logger.Error("Outlook installed but no security manager was registered.  Please re-install Oris4Sync.");
+                return false;
+            }
+        }
+
+        public static bool isOutlook32Bit()
+        {
+            return !isOutlook64Bit();
+        }
+
+        public static bool isOutlook64Bit()
+        {
+            string outlookVersionNumber = getOutlookVersionNumber();
+            if (outlookVersionNumber != null)
+            {
+                object bitnessObject = Registry.GetValue(@"HKEY_LOCAL_MACHINE\Software\Microsoft\Office\" + outlookVersionNumber + @"\Outlook", "Bitness", null);
+                if (bitnessObject != null)
+                {
+                    return "x64".Equals(bitnessObject.ToString()) ? true : false;
+                }
+                else
+                {
+                    Logger.WarnFormat("Could not find bitness for Outlook version {0}, defaulting to 32bit", outlookVersionNumber);
+                    return true;
+                }
+            }
+            else
+            {
+                throw new BaseException("Could not determine Outlook bitness: outlook not installed.");
+            }
+        }
+
+        public static bool isOutlookSecurityManager32Bit()
+        {
+            return Registry.GetValue(@"HKEY_CLASSES_ROOT\AppID\secman.DLL", "AppID", null) != null;
+        }
+
+        public static bool isOutlookSecurityManager64Bit()
+        {
+            return Registry.GetValue(@"HKEY_CLASSES_ROOT\AppID\secman64.DLL", "AppID", null) != null;
         }
 
         public static void checkSecurityManager(SecurityManager securityManager)

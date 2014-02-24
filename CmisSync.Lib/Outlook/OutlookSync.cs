@@ -118,7 +118,7 @@ namespace CmisSync.Lib.Outlook
         public void Sync(bool fullSync)
         {
             if (!repoInfo.OutlookEnabled || !fullSync || !OutlookService.isOutlookInstalled() ||
-                !OutlookService.isOutlookProfileAvailable())
+                !OutlookService.isOutlookProfileAvailable() || !OutlookService.isOutlookSecurityManagerBitnessMatch())
             {
                 return;
             }

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" 
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
   <Bundle
     Name="Oris4 Sync"
     Version="$(var.BuildVersion)"
@@ -7,7 +9,40 @@
     IconSourceFile="$(var.CmisSync.ProjectDir)\Pixmaps\cmissync-app.ico"
     UpgradeCode="12F52B78-05B3-4A20-9BAE-2211A807A3E7">
 
-    <Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]Oris4 Sync"/>
+    <!-- Get Outlook 2010 Bitness -->
+    <util:RegistrySearch Id="Outlook2010BitnessSearch"
+        Root="HKLM"
+        Key="Software\Microsoft\Office\14.0\Outlook"
+        Value="Bitness"
+        Result="value"
+        Variable="Outlook2010Bitness"
+        Format="compatible"/>
+
+    <!-- Get Outlook 2013 Bitness -->
+    <util:RegistrySearch Id="Outlook2013BitnessSearch"
+        After="Outlook2010BitnessSearch"
+        Root="HKLM"
+        Key="Software\Microsoft\Office\15.0\Outlook"
+        Value="Bitness"
+        Result="value"
+        Variable="Outlook2013Bitness"
+        Format="compatible"/>
+
+    <!-- Set Program Files Folder for x86 Installation -->
+    <util:DirectorySearch Id="ProgramFilesFolderSearch"
+        After="Outlook2013BitnessSearch"
+        Condition="NOT((Outlook2010Bitness = &quot;x64&quot;) OR (Outlook2013Bitness = &quot;x64&quot;))"
+        Path="[ProgramFilesFolder]"
+        Variable="RelevantProgramFilesFolder"/>
+
+    <!-- Set Program Files Folder for x86 Installation -->
+    <util:DirectorySearch Id="ProgramFiles64FolderSearch"
+        After="Outlook2013BitnessSearch"
+        Condition="(Outlook2010Bitness = &quot;x64&quot;) OR (Outlook2013Bitness = &quot;x64&quot;)"
+        Path="[ProgramFiles64Folder]"
+        Variable="RelevantProgramFilesFolder"/>
+
+    <Variable Name="InstallFolder" Type="string" Value="[RelevantProgramFilesFolder]Oris4 Sync"/>
 
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLargeLicense">
       <bal:WixStandardBootstrapperApplication
@@ -27,7 +62,7 @@
       <PackageGroupRef Id="NetFx40ClientWeb" />
       <RollbackBoundary />
       <MsiPackage
-          InstallCondition='NOT VersionNT64'
+          InstallCondition="NOT((Outlook2010Bitness = &quot;x64&quot;) OR (Outlook2013Bitness = &quot;x64&quot;))"
           DisplayName="Oris4 Sync Application x86"
           SourceFile="$(var.Installer.ProjectDir)bin\x86\$(var.Installer.Configuration)\Oris4Sync_x86.msi"
           DisplayInternalUI="no"
@@ -38,7 +73,7 @@
       </MsiPackage>
 
       <MsiPackage
-          InstallCondition='VersionNT64'
+          InstallCondition="(Outlook2010Bitness = &quot;x64&quot;) OR (Outlook2013Bitness = &quot;x64&quot;)"
           DisplayName="Oris4 Sync Application x64"
           SourceFile="$(var.Installer.ProjectDir)bin\x64\$(var.Installer.Configuration)\Oris4Sync_x64.msi"
           DisplayInternalUI="no"
