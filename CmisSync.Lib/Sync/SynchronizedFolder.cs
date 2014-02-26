@@ -111,7 +111,7 @@ namespace CmisSync.Lib.Sync
             /// <summary>
             /// Event to notify that the sync has completed.
             /// </summary>
-            private AutoResetEvent autoResetEvent = new AutoResetEvent(true);
+            private ManualResetEvent manualResetEvent = new ManualResetEvent(false);
 
 
             /// <summary>
@@ -264,7 +264,7 @@ namespace CmisSync.Lib.Sync
             {
                 lock (syncLock)
                 {
-                    autoResetEvent.Reset();
+                    manualResetEvent.Reset();
                     repo.OnSyncStart(syncFull);
 
                     // If not connected, connect.
@@ -317,7 +317,7 @@ namespace CmisSync.Lib.Sync
                     }
                     finally
                     {
-                        autoResetEvent.Set();
+                        manualResetEvent.Set();
                     }
                 }
             }
@@ -346,7 +346,7 @@ namespace CmisSync.Lib.Sync
                     Logger.Info("Cancel Sync Requested...");
                     syncWorker.CancelAsync();
                     Logger.Debug("Wait for thread to complete...");
-                    autoResetEvent.WaitOne();
+                    manualResetEvent.WaitOne();
                     Logger.Debug("...cancel completed.");
                 }
             }
