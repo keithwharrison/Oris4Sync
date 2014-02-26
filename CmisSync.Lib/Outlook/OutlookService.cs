@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace CmisSync.Lib.Outlook
 {
@@ -168,10 +169,7 @@ namespace CmisSync.Lib.Outlook
                 SyncObjects syncObjects = nameSpace.SyncObjects;
                 foreach (SyncObject syncObject in syncObjects)
                 {
-                    if (syncObject != null)
-                    {
-                        syncObject.Start();
-                    }
+                    syncObject.Start();
                 }
             }
             catch (System.Exception e)
@@ -182,7 +180,7 @@ namespace CmisSync.Lib.Outlook
 
         public static Email getEmail(SecurityManager securityManager, MAPIFolder folder, MailItem mailItem)
         {
-            Logger.Info("Mail Item: " + mailItem.Subject);
+            Logger.DebugFormat("Mail Item: {0}", mailItem.Subject);
 
             Email email = new Email()
             {
@@ -205,31 +203,38 @@ namespace CmisSync.Lib.Outlook
 
         public static List<EmailAttachment> getEmailAttachments(SecurityManager securityManager, MailItem mailItem, Email email)
         {
-            List<EmailAttachment> emailAttachments = new List<EmailAttachment>();
-            Attachments attachments = mailItem.Attachments;
-            foreach (Attachment attachment in attachments)
+            try
             {
-                emailAttachments.Add(getEmailAttachment(securityManager, attachment, email));
+                securityManager.DisableOOMWarnings = true;
+                List<EmailAttachment> emailAttachments = new List<EmailAttachment>();
+                Attachments attachments = mailItem.Attachments;
+                foreach (Attachment attachment in attachments)
+                {
+                    emailAttachments.Add(new EmailAttachment()
+                    {
+                        emailDataHash = email.dataHash,
+                        fileName = attachment.DisplayName,
+                        name = attachment.DisplayName,
+                        fileSize = attachment.Size,
+                        folderPath = email.folderPath,
+                        attachment = attachment,
+                    });
+                }
+                return emailAttachments;
             }
-            return emailAttachments;
+            finally
+            {
+                securityManager.DisableOOMWarnings = false;
+            }
         }
 
-        public static EmailAttachment getEmailAttachment(SecurityManager securityManager, Attachment attachment, Email email)
+        public static EmailAttachment getEmailAttachmentWithTempFile(SecurityManager securityManager, EmailAttachment emailAttachment)
         {
-            string tempFilePath = saveAttachmentToTempFile(securityManager, attachment);
-            string dataHash = Utils.Md5File(tempFilePath);
-            Logger.DebugFormat("Attachment: {0} {1}", tempFilePath, dataHash);
+            emailAttachment.tempFilePath = saveAttachmentToTempFile(securityManager, emailAttachment.attachment);
+            emailAttachment.dataHash = Utils.Md5File(emailAttachment.tempFilePath);
+            Logger.DebugFormat("Attachment: {0} {1}", emailAttachment.tempFilePath, emailAttachment.dataHash);
 
-            return new EmailAttachment()
-            {
-                emailDataHash = email.dataHash,
-                dataHash = dataHash,
-                fileName = attachment.DisplayName,
-                name = attachment.DisplayName,
-                fileSize = attachment.Size,
-                folderPath = email.folderPath,
-                tempFilePath = tempFilePath,
-            };
+            return emailAttachment;
         }
 
         public static string saveAttachmentToTempFile(SecurityManager securityManager, Attachment attachment)

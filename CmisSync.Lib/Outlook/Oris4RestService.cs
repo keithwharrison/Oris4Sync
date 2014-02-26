@@ -43,7 +43,7 @@ namespace CmisSync.Lib.Outlook
             request.AddParameter("username", username);
             request.AddParameter("password", password);
 
-            Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
+            Logger.DebugFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse<OAuth> response = client.Execute<OAuth>(request);
 
             checkResponseStatus(response);
@@ -61,7 +61,7 @@ namespace CmisSync.Lib.Outlook
             request.AddParameter("pageSize", pageSize.ToString());
 
 
-            Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
+            Logger.DebugFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse<Email> response = client.Execute<Email>(request);
 
             checkResponseStatus(response);
@@ -77,7 +77,7 @@ namespace CmisSync.Lib.Outlook
 
             request.AddUrlSegment("emailHash", emailHash);
 
-            Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
+            Logger.DebugFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse<Email> response = client.Execute<Email>(request);
 
             checkResponseStatus(response, HttpStatusCode.NoContent);
@@ -92,7 +92,7 @@ namespace CmisSync.Lib.Outlook
             request.AddParameter("pageSize", pageSize.ToString());
 
 
-            Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
+            Logger.DebugFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse<List<Email>> response = client.Execute<List<Email>>(request);
 
             checkResponseStatus(response);
@@ -106,7 +106,7 @@ namespace CmisSync.Lib.Outlook
             request.AddHeader("Client-Type", CLIENT_TYPE_OUTLOOK);
             request.AddHeader("Client-GUID", accountId);
 
-            Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
+            Logger.DebugFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse response = client.Execute(request);
 
             checkResponseStatus(response, HttpStatusCode.NoContent);
@@ -117,7 +117,7 @@ namespace CmisSync.Lib.Outlook
             IRestRequest request = getRestRequest(URI_EMAIL_REGISTERED_CLIENT_GET, Method.GET);
             request.AddHeader("Client-Type", CLIENT_TYPE_OUTLOOK);
 
-            Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
+            Logger.DebugFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse response = client.Execute(request);
 
             checkResponseStatus(response, new List<HttpStatusCode>() { HttpStatusCode.OK, HttpStatusCode.NoContent });
@@ -140,7 +140,7 @@ namespace CmisSync.Lib.Outlook
             request.RequestFormat = DataFormat.Json;
             request.AddBody(emailList);
 
-            Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
+            Logger.DebugFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse<List<Email>> response = client.Execute<List<Email>>(request);
 
             checkResponseStatus(response, new List<HttpStatusCode>() { HttpStatusCode.OK, HttpStatusCode.ExpectationFailed });
@@ -148,10 +148,10 @@ namespace CmisSync.Lib.Outlook
             switch (response.StatusCode)
             {
                 case HttpStatusCode.OK:
-                    Logger.Info("Emails were created...");
+                    Logger.Debug("Emails were created...");
                     break;
                 case HttpStatusCode.ExpectationFailed:
-                    Logger.Info("Some emails created...");
+                    Logger.Debug("Some emails created...");
                     break;
             }
 
@@ -167,7 +167,7 @@ namespace CmisSync.Lib.Outlook
             request.RequestFormat = DataFormat.Json;
             request.AddBody(emailList);
 
-            Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
+            Logger.DebugFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse<Dictionary<string, long>> response = client.Execute<Dictionary<string, long>>(request);
 
             checkResponseStatus(response, HttpStatusCode.OK);
@@ -185,7 +185,7 @@ namespace CmisSync.Lib.Outlook
 
             request.AddFile("data", data, emailAttachment.fileName);
 
-            Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
+            Logger.DebugFormat("Request: {0} {1}", request.Method, request.Resource);
             IRestResponse response = client.Execute(request);
 
             checkResponseStatus(response, new List<HttpStatusCode>() { HttpStatusCode.OK, HttpStatusCode.Created });
@@ -193,10 +193,10 @@ namespace CmisSync.Lib.Outlook
             switch (response.StatusCode)
             {
                 case HttpStatusCode.OK:
-                    Logger.Info("Attachment already exists.");
+                    Logger.Debug("Attachment already exists.");
                     break;
                 case HttpStatusCode.Created:
-                    Logger.Info("Attachment created.");
+                    Logger.Debug("Attachment created.");
                     break;
             }
 

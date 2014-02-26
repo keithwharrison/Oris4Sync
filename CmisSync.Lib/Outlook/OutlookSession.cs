@@ -160,9 +160,9 @@ namespace CmisSync.Lib.Outlook
             return OutlookService.getEmailAttachments(SecurityManager, mailItem, email);
         }
 
-        public EmailAttachment getEmailAttachment(Attachment attachment, Email email)
+        public EmailAttachment getEmailAttachmentWithTempFile(EmailAttachment emailAttachment)
         {
-            return OutlookService.getEmailAttachment(SecurityManager, attachment, email);
+            return OutlookService.getEmailAttachmentWithTempFile(SecurityManager, emailAttachment);
         }
     }
 }

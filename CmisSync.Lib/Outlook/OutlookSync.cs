@@ -61,8 +61,7 @@ namespace CmisSync.Lib.Outlook
             //Database
             string dataPath = repoInfo.CmisDatabase;
             this.outlookDatabase = new OutlookDatabase(Path.Combine(Path.GetDirectoryName(dataPath),
-                Path.GetFileNameWithoutExtension(dataPath) + " (outlook)" +
-                Path.GetExtension(dataPath)));
+                Path.GetFileNameWithoutExtension(dataPath) + ".outlook"));
 
             //Url
             repoUrl = repoInfo.Address.GetLeftPart(UriPartial.Authority);
@@ -117,8 +116,11 @@ namespace CmisSync.Lib.Outlook
         /// </summary>
         public void Sync(bool fullSync)
         {
-            if (!repoInfo.OutlookEnabled || !fullSync || !OutlookService.isOutlookInstalled() ||
-                !OutlookService.isOutlookProfileAvailable() || !OutlookService.isOutlookSecurityManagerBitnessMatch())
+            if (!repoInfo.OutlookEnabled ||
+                !fullSync || 
+                !OutlookService.isOutlookInstalled() ||
+                !OutlookService.isOutlookProfileAvailable() || 
+                !OutlookService.isOutlookSecurityManagerBitnessMatch())
             {
                 return;
             }
@@ -133,11 +135,9 @@ namespace CmisSync.Lib.Outlook
                 RegisterOutlookClient(restSession);
 
                 //Send and recieve emails...
-                outlookSession.sendAndRecieve();
+                //outlookSession.sendAndRecieve();
 
                 string[] folderPaths = repoInfo.getOutlookFolders();
-
-                HashSet<string> allEmailsInOutlook = new HashSet<string>();
 
                 foreach (string folderPath in folderPaths)
                 {
@@ -148,8 +148,9 @@ namespace CmisSync.Lib.Outlook
                         continue;
                     }
 
-                    Logger.InfoFormat("Syncing Outlook Folder: {0}", folder.FolderPath);
+                    Logger.DebugFormat("Syncing Outlook Folder: {0}", folder.FolderPath);
 
+                    HashSet<string> allEmailsInFolder = new HashSet<string>();
                     List<Email> emailList = new List<Email>();
                     List<EmailAttachment> attachmentList = new List<EmailAttachment>();
 
@@ -165,7 +166,7 @@ namespace CmisSync.Lib.Outlook
 
                             if (EmailWorthSyncing(email))
                             {
-                                allEmailsInOutlook.Add(email.dataHash);
+                                allEmailsInFolder.Add(email.dataHash);
 
                                 if (!outlookDatabase.ContainsEmail(email.dataHash))
                                 {
@@ -178,7 +179,7 @@ namespace CmisSync.Lib.Outlook
                             if (emailList.Count >= EMAIL_BATCH_SIZE)
                             {
                                 UploadEmails(restSession, emailList);
-                                UploadAttachments(restSession, attachmentList);
+                                UploadAttachments(restSession, outlookSession, attachmentList);
                             }
                         }
                     }
@@ -186,27 +187,20 @@ namespace CmisSync.Lib.Outlook
                     if (emailList.Count > 0)
                     {
                         UploadEmails(restSession, emailList);
-                        UploadAttachments(restSession, attachmentList);
+                        UploadAttachments(restSession, outlookSession, attachmentList);
                     }
+
+                    //TODO:: Delete left older folder items...
+                    DeleteObsoleteEmailsFromFolder(restSession, folderPath, allEmailsInFolder);
                 }
 
-                HashSet<string> allEmails = outlookDatabase.ListEmailDataHashes();
-                List<string> emailsToDelete = new List<string>();
-                foreach (string dataHash in allEmails)
-                {
-                    if (!allEmailsInOutlook.Contains(dataHash))
-                    {
-                        emailsToDelete.Add(dataHash);
-                    }
-                }
-                if (emailsToDelete.Count > 0)
-                {
-                    DeleteEmails(restSession, emailsToDelete);
-                }
+                DeleteObsoleteFolders(restSession, folderPaths);
             }
             finally
             {
+                restSession = null;
                 outlookSession.close();
+                outlookSession = null;
                 GC.Collect(); //Ensure Outlook objects are released.
                 GC.WaitForPendingFinalizers();
             }
@@ -220,16 +214,15 @@ namespace CmisSync.Lib.Outlook
             if (string.IsNullOrWhiteSpace(clientId))
             {
                 clientId = Guid.NewGuid().ToString();
-                Logger.InfoFormat("Outlook Client ID not found creating a new one: {0}", clientId);
             }
 
             string registeredClient = restSession.getRegisteredClient();
-            Logger.InfoFormat("Registered Outlook Client ID: {0}", registeredClient);
+            Logger.InfoFormat("Current registered Outlook client ID: {0}", registeredClient);
             if (!registeredClient.Equals(clientId))
             {
                 SleepWhileSuspended();
                 //TODO: Ask user if they are sure before putting a new client ID (all emails deleted)
-                Logger.InfoFormat("Registering new client...");
+                Logger.InfoFormat("Registering a new Outlook client ID: {0}", clientId);
                 restSession.putRegisteredClient(clientId);
                 outlookDatabase.RemoveAllEmails();
                 outlookDatabase.SetClientId(clientId);
@@ -239,11 +232,10 @@ namespace CmisSync.Lib.Outlook
         private bool EmailWorthSyncing(Email email)
         {
 
-
             return true;
         }
 
-        private bool AttachmentWorthSyncing()
+        private bool AttachmentWorthSyncing(EmailAttachment emailAttachment)
         {
 
             return true;
@@ -255,6 +247,7 @@ namespace CmisSync.Lib.Outlook
 
             try
             {
+                Logger.InfoFormat("Uploading {0} emails.", emails.Count);
                 Dictionary<string, long> emailKeyMap = restSession.insertEmailBatch(emails);
 
                 foreach (Email email in emails)
@@ -262,11 +255,12 @@ namespace CmisSync.Lib.Outlook
                     if (emailKeyMap.ContainsKey(email.dataHash))
                     {
                         long emailKey = emailKeyMap[email.dataHash];
-                        outlookDatabase.AddEmail(email.dataHash, email.folderPath, DateTime.Now); //TODO: add EntryID and email key into database?
+                        outlookDatabase.AddEmail(email.dataHash, email.folderPath, email.entryID, emailKey, DateTime.Now);
+                        Logger.InfoFormat("Added email to database: {0}\\{1}", email.folderPath, email.dataHash);
                     }
                     else
                     {
-                        Logger.ErrorFormat("Email was not inserted: {0}/{1}", email.folderPath, email.dataHash);
+                        Logger.ErrorFormat("Email was not inserted: {0}\\{1}", email.folderPath, email.dataHash);
                     }
                 }
             }
@@ -279,6 +273,61 @@ namespace CmisSync.Lib.Outlook
                 emails.Clear();
             }
         }
+
+        private void DeleteObsoleteEmailsFromFolder(Oris4RestSession restSession, string folderPath, HashSet<string> emailsInFolder)
+        {
+            SleepWhileSuspended();
+
+            try
+            {
+                HashSet<string> emailsInDatabase = outlookDatabase.ListEmailDataHashes(folderPath);
+                List<string> obsoleteEmails = new List<string>();
+                foreach (string dataHash in emailsInDatabase)
+                {
+                    if (!emailsInFolder.Contains(dataHash))
+                    {
+                        obsoleteEmails.Add(dataHash);
+                    }
+                }
+
+                if (obsoleteEmails.Count > 0)
+                {
+                    Logger.InfoFormat("Deleting {0} emails on server from folder: {1}", obsoleteEmails.Count, folderPath);
+                    DeleteEmails(restSession, obsoleteEmails);
+                }
+            }
+            catch (System.Exception e)
+            {
+                ProcessRecoverableException("Error deleting obsolete emails from folder", e);
+            }
+        }
+
+        private void DeleteObsoleteFolders(Oris4RestSession restSession, string[] folderPaths)
+        {
+            SleepWhileSuspended();
+
+            try 
+            {
+
+                HashSet<string> currentFolders = new HashSet<string>(folderPaths);
+                HashSet<string> foldersInDatabase = outlookDatabase.ListDistinctFolders();
+                foreach (string folderPath in foldersInDatabase)
+                {
+                    if (!currentFolders.Contains(folderPath))
+                    {
+                        //Folder is obsolete
+                        List<string> obsoleteEmails = new List<string>(outlookDatabase.ListEmailDataHashes(folderPath));
+                        Logger.InfoFormat("Deleting {0} emails on server from folder: {1}", obsoleteEmails.Count, folderPath);
+                        DeleteEmails(restSession, obsoleteEmails);
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                ProcessRecoverableException("Could not delete email obsolete folders.", e);
+            }
+        }
+
 
         private void DeleteEmails(Oris4RestSession restSession, List<string> emailsToDelete)
         {
@@ -296,10 +345,11 @@ namespace CmisSync.Lib.Outlook
 
             try
             {
-
+                Logger.InfoFormat("Deleting email from server: {0}", dataHash);
                 restSession.deleteEmail(dataHash);
 
                 outlookDatabase.RemoveEmail(dataHash);
+                Logger.InfoFormat("Deleted email from database: {0}", dataHash);
             }
             catch (System.Exception e)
             {
@@ -307,35 +357,53 @@ namespace CmisSync.Lib.Outlook
             }
         }
 
-        private void UploadAttachments(Oris4RestSession restSession, List<EmailAttachment> emailAttachments)
-        {
-            SleepWhileSuspended();
-
-            foreach (EmailAttachment emailAttachment in emailAttachments)
-            {
-                if (!outlookDatabase.ContainsAttachment(emailAttachment.emailDataHash, emailAttachment.dataHash, emailAttachment.fileName))
-                {
-                    UploadAttachment(restSession, emailAttachment);
-                }
-            }
-
-            emailAttachments.Clear();
-        }
-
-        private void UploadAttachment(Oris4RestSession restSession, EmailAttachment emailAttachment)
+        private void UploadAttachments(Oris4RestSession restSession, OutlookSession outlookSession, List<EmailAttachment> emailAttachments)
         {
             SleepWhileSuspended();
 
             try
             {
-                string returnValue = restSession.insertAttachment(emailAttachment, File.ReadAllBytes(emailAttachment.tempFilePath));
+                foreach (EmailAttachment emailAttachment in emailAttachments)
+                {
+                    if (AttachmentWorthSyncing(emailAttachment) &&
+                        outlookDatabase.ContainsEmail(emailAttachment.emailDataHash) &&
+                        !outlookDatabase.ContainsAttachment(emailAttachment.emailDataHash, emailAttachment.fileName, emailAttachment.fileSize))
+                    {
+                        UploadAttachment(restSession, outlookSession, emailAttachment);
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                ProcessRecoverableException("Could not upload attachment list.", e);
+            }
+            finally
+            {
+                emailAttachments.Clear();
+            }
+        }
 
-                //Todo: check return value...
+        private void UploadAttachment(Oris4RestSession restSession, OutlookSession outlookSession, EmailAttachment emailAttachment)
+        {
+            SleepWhileSuspended();
 
-                outlookDatabase.AddAttachment(emailAttachment.emailDataHash, emailAttachment.dataHash, emailAttachment.fileName,
-                    emailAttachment.folderPath, DateTime.Now);
+            try
+            {
+                EmailAttachment emailAttachmentWithTempFile = outlookSession.getEmailAttachmentWithTempFile(emailAttachment);
 
-                File.Delete(emailAttachment.tempFilePath);
+                try
+                {
+                    Logger.InfoFormat("Uploading attachment to server: {0}\\{1} ({2})", emailAttachment.folderPath, emailAttachment.fileName, emailAttachment.emailDataHash);
+                    string returnValue = restSession.insertAttachment(emailAttachment, File.ReadAllBytes(emailAttachment.tempFilePath));
+
+                    outlookDatabase.AddAttachment(emailAttachment.emailDataHash, emailAttachment.fileName, emailAttachment.fileSize,
+                        emailAttachment.folderPath, emailAttachment.dataHash, DateTime.Now);
+                    Logger.InfoFormat("Added attachment to database: {0}\\{1} ({2})", emailAttachment.folderPath, emailAttachment.fileName, emailAttachment.emailDataHash);
+                }
+                finally
+                {
+                    File.Delete(emailAttachment.tempFilePath);
+                }
             }
             catch (System.Exception e)
             {

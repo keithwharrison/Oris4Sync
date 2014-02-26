@@ -106,14 +106,17 @@ namespace CmisSync.Lib.Outlook
                             @"CREATE TABLE emails (
                             dataHash TEXT PRIMARY KEY,
                             folderPath TEXT,
+                            entryId TEXT,
+                            key INTEGER,
                             uploaded DATE);
                         CREATE TABLE attachments (
                             emailDataHash TEXT NOT NULL,
-                            dataHash TEXT NOT NULL,
                             fileName TEXT NOT NULL,
+                            fileSize INTEGER NOT NULL,
                             folderPath TEXT,
+                            dataHash TEXT NOT NULL,
                             uploaded DATE,
-                            PRIMARY KEY (emailDataHash, dataHash, fileName));
+                            PRIMARY KEY (emailDataHash, fileName, fileSize));
                         CREATE TABLE general (
                             key TEXT PRIMARY KEY,
                             value TEXT);";    /* Generic values */
@@ -138,7 +141,7 @@ namespace CmisSync.Lib.Outlook
         /// Add a file to the database.
         /// If checksum is not null, it will be used for the database entry
         /// </summary>
-        public void AddEmail(string dataHash, string folderPath, DateTime uploaded)
+        public void AddEmail(string dataHash, string folderPath, string entryId, long key, DateTime uploaded)
         {
             Logger.DebugFormat("Starting database email addition: {0}\\{1}", folderPath, dataHash);
             // Make sure that the uploaded date is always UTC, because sqlite has no concept of Time-Zones
@@ -156,11 +159,13 @@ namespace CmisSync.Lib.Outlook
 
             // Insert into database.
             string command =
-                @"INSERT OR REPLACE INTO emails (dataHash, folderPath, uploaded)
-                    VALUES (@dataHash, @folderPath, @uploaded)";
+                @"INSERT OR REPLACE INTO emails (dataHash, folderPath, entryId, key, uploaded)
+                    VALUES (@dataHash, @folderPath, @entryId, @key, @uploaded)";
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("dataHash", dataHash);
             parameters.Add("folderPath", folderPath);
+            parameters.Add("entryId", entryId);
+            parameters.Add("key", key);
             parameters.Add("uploaded", uploaded);
             ExecuteSQLAction(command, parameters);
             Logger.DebugFormat("Completed database email addition: {0}\\{1}", folderPath, dataHash);
@@ -234,10 +239,55 @@ namespace CmisSync.Lib.Outlook
         }
 
         /// <summary>
+        /// List all email data hashes for folder.
+        /// </summary>
+        public HashSet<string> ListEmailDataHashes(string folderPath)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            parameters.Add("folderPath", folderPath);
+            List<NameValueCollection> rowList = ExecuteListSQLFunction("SELECT dataHash FROM emails WHERE folderPath=@folderPath", parameters);
+            HashSet<string> dataHashList = new HashSet<string>();
+            if (rowList != null)
+            {
+                foreach (NameValueCollection nameValueCollection in rowList)
+                {
+                    string dataHash = nameValueCollection.Get("dataHash");
+                    if (!string.IsNullOrWhiteSpace(dataHash))
+                    {
+                        dataHashList.Add(dataHash);
+                    }
+                }
+            }
+            return dataHashList;
+        }
+
+        /// <summary>
+        /// List all email data hashes for folder.
+        /// </summary>
+        public HashSet<string> ListDistinctFolders()
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            List<NameValueCollection> rowList = ExecuteListSQLFunction("SELECT DISTINCT folderPath FROM emails", parameters);
+            HashSet<string> folderPathList = new HashSet<string>();
+            if (rowList != null)
+            {
+                foreach (NameValueCollection nameValueCollection in rowList)
+                {
+                    string folderPath = nameValueCollection.Get("folderPath");
+                    if (!string.IsNullOrWhiteSpace(folderPath))
+                    {
+                        folderPathList.Add(folderPath);
+                    }
+                }
+            }
+            return folderPathList;
+        }
+        
+        /// <summary>
         /// Add a file to the database.
         /// If checksum is not null, it will be used for the database entry
         /// </summary>
-        public void AddAttachment(string emailDataHash, string dataHash, string fileName, string folderPath, DateTime uploaded)
+        public void AddAttachment(string emailDataHash, string fileName, long fileSize, string folderPath, string dataHash, DateTime uploaded)
         {
             Logger.DebugFormat("Starting database attachment addition: {0}\\{1}", folderPath, fileName);
             // Make sure that the uploaded date is always UTC, because sqlite has no concept of Time-Zones
@@ -261,13 +311,14 @@ namespace CmisSync.Lib.Outlook
 
             // Insert into database.
             string command =
-                @"INSERT OR REPLACE INTO attachments (emailDataHash, dataHash, fileName, folderPath, uploaded)
-                    VALUES (@emailDataHash, @dataHash, @fileName, @folderPath, @uploaded)";
+                @"INSERT OR REPLACE INTO attachments (emailDataHash, fileName, fileSize, folderPath, dataHash, uploaded)
+                    VALUES (@emailDataHash, @fileName, @fileSize, @folderPath, @dataHash, @uploaded)";
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("emailDataHash", emailDataHash);
-            parameters.Add("dataHash", dataHash);
             parameters.Add("fileName", fileName);
+            parameters.Add("fileSize", fileSize);
             parameters.Add("folderPath", folderPath);
+            parameters.Add("dataHash", dataHash);
             parameters.Add("uploaded", uploaded);
             ExecuteSQLAction(command, parameters);
             Logger.DebugFormat("Completed database attachment addition: {0}\\{1}", folderPath, fileName);
@@ -276,15 +327,15 @@ namespace CmisSync.Lib.Outlook
         /// <summary>
         /// Get the time at which the file was uploaded.
         /// </summary>
-        public DateTime? GetAttachmentUploadedDate(string emailDataHash, string dataHash, string fileName)
+        public DateTime? GetAttachmentUploadedDate(string emailDataHash, string fileName, long fileSize)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("emailDataHash", emailDataHash);
-            parameters.Add("dataHash", dataHash);
             parameters.Add("fileName", fileName);
+            parameters.Add("fileSize", fileSize);
             object obj = ExecuteScalarSQLFunction(
                 @"SELECT uploaded FROM attachments WHERE emailDataHash=@emailDataHash AND
-                    dataHash=@dataHash AND fileName=@fileName", parameters);
+                    fileName=@fileName AND fileSize=@fileSize", parameters);
             if (null != obj)
             {
                 obj = ((DateTime)obj).ToUniversalTime();
@@ -295,15 +346,15 @@ namespace CmisSync.Lib.Outlook
         /// <summary>
         /// Checks whether the database contains a given email.
         /// </summary>
-        public bool ContainsAttachment(string emailDataHash, string dataHash, string fileName)
+        public bool ContainsAttachment(string emailDataHash, string fileName, long fileSize)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("emailDataHash", emailDataHash);
-            parameters.Add("dataHash", dataHash);
             parameters.Add("fileName", fileName);
+            parameters.Add("fileSize", fileSize);
             return null != ExecuteScalarSQLFunction(
-                @"SELECT dataHash FROM attachments WHERE emailDataHash=@emailDataHash AND
-                    dataHash=@dataHash AND fileName=@fileName", parameters);
+                @"SELECT emailDataHash FROM attachments WHERE emailDataHash=@emailDataHash AND
+                    fileName=@fileName AND fileSize=@fileSize", parameters);
         }
 
         /// <summary>

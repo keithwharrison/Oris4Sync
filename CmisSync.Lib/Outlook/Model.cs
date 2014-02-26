@@ -1,3 +1,4 @@
+using Microsoft.Office.Interop.Outlook;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -20,10 +21,11 @@ namespace CmisSync.Lib.Outlook
         public List<EmailContact> emailContacts { get; set; }
         public List<EmailAttachment> attachments { get; set; }
         public DateTime lastModified { get; set; }
-        public int key { get; set; }
+        public long key { get; set; }
         [JsonIgnore]
         public string entryID { get; set; }
-
+        [JsonIgnore]
+        public MailItem mailItem { get; set; }
     }
 
     public class EmailContact
@@ -44,6 +46,8 @@ namespace CmisSync.Lib.Outlook
         public string folderPath { get; set; }
         [JsonIgnore]
         public string tempFilePath { get; set; }
+        [JsonIgnore]
+        public Attachment attachment { get; set; }
     }
     
     public class OAuth
