@@ -34,7 +34,7 @@ namespace CmisSync.Lib.Sync
             /// <summary>
             /// Interval for which sync will wait while paused before retrying sync.
             /// </summary>
-            private static readonly int SYNC_SUSPEND_SLEEP_INTERVAL = 1 * 1000; //five seconds
+            private static readonly int SYNC_SUSPEND_SLEEP_INTERVAL = 1 * 1000; //one second
 
             /// <summary>
             /// An object for locking the sync method (one thread at a time can run sync).
@@ -117,6 +117,16 @@ namespace CmisSync.Lib.Sync
             /// Outlook sync object.
             /// </summary>
             private CmisSync.Lib.Outlook.OutlookSync outlookSync;
+
+            /// <summary>
+            /// Initial server busy interval
+            /// </summary>
+            private static readonly int INITIAL_SERVER_BUSY_SLEEP_INTERVAL = 1 * 1000; //one second (1000ms)
+
+            /// <summary>
+            /// Server busy sleep interval.
+            /// </summary>
+            private int serverBusySleepInterval = INITIAL_SERVER_BUSY_SLEEP_INTERVAL;
 
 
             /// <summary>
@@ -296,6 +306,7 @@ namespace CmisSync.Lib.Sync
                 lock (syncLock)
                 {
                     autoResetEvent.Reset();
+                    serverBusySleepInterval = INITIAL_SERVER_BUSY_SLEEP_INTERVAL;
                     repo.OnSyncStart(syncFull);
                     
                     // If not connected, connect.
@@ -474,6 +485,11 @@ namespace CmisSync.Lib.Sync
                     //Unable to access file/directory
                     recoverable = true;
                 }
+                else if (exception is ServerBusyException)
+                {
+                    //Server Busy
+                    recoverable = RecoverFromServerBusyException();
+                }
                 else
                 {
                     //All other errors...
@@ -488,6 +504,24 @@ namespace CmisSync.Lib.Sync
                 {
                     throw exception;
                 }
+            }
+
+            /// <summary>
+            /// Recover from ServerBusyException.
+            /// </summary>
+            private bool RecoverFromServerBusyException()
+            {
+                if (serverBusySleepInterval > repoinfo.PollInterval)
+                {
+                    return false;
+                }
+
+                Logger.InfoFormat("Server busy - sleeping for {0}ms", serverBusySleepInterval);
+                Thread.Sleep(serverBusySleepInterval);
+
+                serverBusySleepInterval = serverBusySleepInterval * 2;
+
+                return true;
             }
 
             /// <summary>

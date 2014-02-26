@@ -148,8 +148,6 @@ namespace CmisSync.Lib.Outlook
                         continue;
                     }
 
-                    Logger.DebugFormat("Entry ID: {0}", folder.EntryID);
-                    Logger.DebugFormat("Folder Name: {0}", folder.Name);
                     Logger.InfoFormat("Syncing Outlook Folder: {0}", folder.FolderPath);
 
                     List<Email> emailList = new List<Email>();
@@ -255,15 +253,31 @@ namespace CmisSync.Lib.Outlook
         {
             SleepWhileSuspended();
 
-            List<Email> returned = restSession.insertEmail(emails);
-
-            foreach (Email email in emails)
+            try
             {
-                //TODO: Check if email was indeed uploaded...
-                outlookDatabase.AddEmail(email.dataHash, email.folderPath, DateTime.Now);
-            }
+                Dictionary<string, long> emailKeyMap = restSession.insertEmailBatch(emails);
 
-            emails.Clear();
+                foreach (Email email in emails)
+                {
+                    if (emailKeyMap.ContainsKey(email.dataHash))
+                    {
+                        long emailKey = emailKeyMap[email.dataHash];
+                        outlookDatabase.AddEmail(email.dataHash, email.folderPath, DateTime.Now); //TODO: add EntryID and email key into database?
+                    }
+                    else
+                    {
+                        Logger.ErrorFormat("Email was not inserted: {0}/{1}", email.folderPath, email.dataHash);
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                ProcessRecoverableException("Problem while uploading email batch", e);
+            }
+            finally
+            {
+                emails.Clear();
+            }
         }
 
         private void DeleteEmails(Oris4RestSession restSession, List<string> emailsToDelete)
@@ -280,9 +294,17 @@ namespace CmisSync.Lib.Outlook
         {
             SleepWhileSuspended();
 
-            restSession.deleteEmail(dataHash);
+            try
+            {
 
-            outlookDatabase.RemoveEmail(dataHash);
+                restSession.deleteEmail(dataHash);
+
+                outlookDatabase.RemoveEmail(dataHash);
+            }
+            catch (System.Exception e)
+            {
+                ProcessRecoverableException("Could not delete email: " + dataHash, e);
+            }
         }
 
         private void UploadAttachments(Oris4RestSession restSession, List<EmailAttachment> emailAttachments)
@@ -304,14 +326,21 @@ namespace CmisSync.Lib.Outlook
         {
             SleepWhileSuspended();
 
-            string returnValue = restSession.insertAttachment(emailAttachment, File.ReadAllBytes(emailAttachment.tempFilePath));
+            try
+            {
+                string returnValue = restSession.insertAttachment(emailAttachment, File.ReadAllBytes(emailAttachment.tempFilePath));
 
-            //Todo: check return value...
+                //Todo: check return value...
 
-            outlookDatabase.AddAttachment(emailAttachment.emailDataHash, emailAttachment.dataHash, emailAttachment.fileName,
-                emailAttachment.folderPath, DateTime.Now);
+                outlookDatabase.AddAttachment(emailAttachment.emailDataHash, emailAttachment.dataHash, emailAttachment.fileName,
+                    emailAttachment.folderPath, DateTime.Now);
 
-            File.Delete(emailAttachment.tempFilePath);
+                File.Delete(emailAttachment.tempFilePath);
+            }
+            catch (System.Exception e)
+            {
+                ProcessRecoverableException("Could not upload attachment: ", e);
+            }
         }
     }
 }

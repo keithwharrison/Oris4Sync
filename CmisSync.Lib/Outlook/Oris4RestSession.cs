@@ -110,6 +110,21 @@ namespace CmisSync.Lib.Outlook
             return Oris4RestService.insertEmail(client, registeredClient, emailAddress, emailList);
         }
 
+        public Dictionary<string, long> insertEmailBatch(List<Email> emailList)
+        {
+            if (oAuth == null || string.IsNullOrWhiteSpace(emailAddress))
+            {
+                throw new PermissionDeniedException("You must login before performing this action");
+            }
+
+            if (string.IsNullOrWhiteSpace(registeredClient))
+            {
+                throw new PermissionDeniedException("You must register outlook before performing this action");
+            }
+
+            return Oris4RestService.insertEmailBatch(client, registeredClient, emailAddress, emailList);
+        }
+
         public string insertAttachment(EmailAttachment emailAttachment, byte[] data)
         {
             if (oAuth == null || string.IsNullOrWhiteSpace(emailAddress))

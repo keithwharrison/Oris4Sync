@@ -18,6 +18,7 @@ namespace CmisSync.Lib.Outlook
         private static readonly string URI_EMAIL_REGISTERED_CLIENT_GET = "webServices/rest/v3/email/registeredClient";
         private static readonly string URI_EMAIL_REGISTERED_CLIENT_PUT = "webServices/rest/v3/email/registeredClient";
         private static readonly string URI_EMAIL_POST = "webServices/rest/v3/email/";
+        private static readonly string URI_EMAIL_BATCH_POST = "webServices/rest/v3/email/batch";
         private static readonly string URI_EMAIL_ATTACHMENT_POST = "webServices/rest/v3/email/attachment";
 
         private static readonly string CLIENT_TYPE_OUTLOOK = "outlook";
@@ -153,6 +154,23 @@ namespace CmisSync.Lib.Outlook
                     Logger.Info("Some emails created...");
                     break;
             }
+
+            return response.Data;
+        }
+
+        public static Dictionary<string, long> insertEmailBatch(RestClient client, string accountId, string emailAddress, List<Email> emailList)
+        {
+            IRestRequest request = getRestRequest(URI_EMAIL_BATCH_POST, Method.POST);
+            request.AddHeader("Client-GUID", accountId);
+            request.AddHeader("Email-Address", emailAddress);
+
+            request.RequestFormat = DataFormat.Json;
+            request.AddBody(emailList);
+
+            Logger.InfoFormat("Request: {0} {1}", request.Method, request.Resource);
+            IRestResponse<Dictionary<string, long>> response = client.Execute<Dictionary<string, long>>(request);
+
+            checkResponseStatus(response, HttpStatusCode.OK);
 
             return response.Data;
         }
