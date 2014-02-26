@@ -111,7 +111,7 @@ namespace CmisSync.Lib.Sync
             /// <summary>
             /// Event to notify that the sync has completed.
             /// </summary>
-            private AutoResetEvent autoResetEvent = new AutoResetEvent(true);
+            private ManualResetEvent manualResetEvent = new ManualResetEvent(false);
 
             /// <summary>
             /// Outlook sync object.
@@ -305,7 +305,7 @@ namespace CmisSync.Lib.Sync
             {
                 lock (syncLock)
                 {
-                    autoResetEvent.Reset();
+                    manualResetEvent.Reset();
                     serverBusySleepInterval = INITIAL_SERVER_BUSY_SLEEP_INTERVAL;
                     repo.OnSyncStart(syncFull);
                     
@@ -364,7 +364,7 @@ namespace CmisSync.Lib.Sync
                     }
                     finally
                     {
-                        autoResetEvent.Set();
+                        manualResetEvent.Set();
                     }
                 }
             }
@@ -393,7 +393,7 @@ namespace CmisSync.Lib.Sync
                     Logger.Info("Cancel Sync Requested...");
                     syncWorker.CancelAsync();
                     Logger.Debug("Wait for thread to complete...");
-                    autoResetEvent.WaitOne();
+                    manualResetEvent.WaitOne();
                     Logger.Debug("...cancel completed.");
                 }
             }
