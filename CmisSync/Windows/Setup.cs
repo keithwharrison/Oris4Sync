@@ -1287,8 +1287,10 @@ namespace CmisSync
 
         private static List<OutlookFolder> getOutlookFolderTree()
         {
-            OutlookSession outlookSession = new OutlookSession();
-            return outlookSession.getFolderTree();
+            using (OutlookSession outlookSession = new OutlookSession())
+            {
+                return outlookSession.getFolderTree();
+            }
         }
 
         private static void populateOutlookTreeView(TreeView outlookTreeView)
