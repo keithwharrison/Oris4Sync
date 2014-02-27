@@ -59,9 +59,7 @@ namespace CmisSync.Lib.Outlook
             this.ProcessRecoverableException = ProcessRecoverableException;
 
             //Database
-            string dataPath = repoInfo.CmisDatabase;
-            this.outlookDatabase = new OutlookDatabase(Path.Combine(Path.GetDirectoryName(dataPath),
-                Path.GetFileNameWithoutExtension(dataPath) + ".outlook"));
+            this.outlookDatabase = new OutlookDatabase(GetOutlookDatabasePath(repoInfo.CmisDatabase));
 
             //Url
             repoUrl = repoInfo.Address.GetLeftPart(UriPartial.Authority);
@@ -108,6 +106,15 @@ namespace CmisSync.Lib.Outlook
                 }
                 this.disposed = true;
             }
+        }
+
+        /// <summary>
+        /// Get the outlook database path.
+        /// </summary>
+        public static string GetOutlookDatabasePath(string cmisDatabasePath)
+        {
+            return Path.Combine(Path.GetDirectoryName(cmisDatabasePath),
+                Path.GetFileNameWithoutExtension(cmisDatabasePath) + ".outlook");
         }
 
 

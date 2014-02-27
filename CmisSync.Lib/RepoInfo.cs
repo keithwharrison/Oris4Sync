@@ -95,9 +95,7 @@ namespace CmisSync.Lib
         public RepoInfo(string name, string cmisDatabaseFolder)
         {
             Name = name;
-            name = name.Replace("\\", "_");
-            name = name.Replace("/", "_");
-            CmisDatabase = Path.Combine(cmisDatabaseFolder, name + ".cmissync");
+            CmisDatabase = GetCmisDatabasePath(cmisDatabaseFolder, name);
         }
 
 
@@ -107,9 +105,7 @@ namespace CmisSync.Lib
         public RepoInfo(string name, string cmisDatabaseFolder, string remotePath, string address, string user, string password, string repoID, double pollInterval)
         {
             Name = name;
-            name = name.Replace("\\", "_");
-            name = name.Replace("/", "_");
-            CmisDatabase = Path.Combine(cmisDatabaseFolder, name + ".cmissync");
+            CmisDatabase = GetCmisDatabasePath(cmisDatabaseFolder, name);
             RemotePath = remotePath;
             Address = new Uri(address);
             User = user;
@@ -118,6 +114,14 @@ namespace CmisSync.Lib
             TargetDirectory = Path.Combine(ConfigManager.CurrentConfig.FoldersPath, name);
             PollInterval = pollInterval;
             OutlookEnabled = false;
+        }
+
+        /// <summary>
+        /// Get the cmis database path.
+        /// </summary>
+        private string GetCmisDatabasePath(string cmisDatabaseFolder, string repoName)
+        {
+            return Path.Combine(cmisDatabaseFolder, repoName.Replace("\\", "_").Replace("/", "_") + ".cmissync");
         }
 
         /// <summary>

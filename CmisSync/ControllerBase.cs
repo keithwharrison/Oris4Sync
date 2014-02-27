@@ -332,28 +332,30 @@ namespace CmisSync
         /// <param name="folder">The synchronized folder to remove</param>
         private void RemoveRepository(Config.SyncConfig.Folder folder)
         {
-            if (this.repositories.Count > 0)
+            RepoBase repository = null;
+            string databasePath = null;
+            string outlookDatabasePath = null;
+            foreach (RepoBase repo in repositories)
             {
-                for (int i = 0; i < this.repositories.Count; i++)
+                if (repo.LocalPath.Equals(folder.LocalPath))
                 {
-                    RepoBase repo = this.repositories[i];
-
-                    if (repo.LocalPath.Equals(folder.LocalPath))
-                    {
-                        repo.CancelSync();
-                        repo.Dispose();
-                        this.repositories.Remove(repo);
-                        Logger.Info("Removed Repository: " + repo.Name);
-                        repo = null;
-                        break;
-                    }
+                    repository = repo;
+                    databasePath = repository.RepoInfo.CmisDatabase;
+                    outlookDatabasePath = CmisSync.Lib.Outlook.OutlookSync.GetOutlookDatabasePath(databasePath);
                 }
             }
-            // Remove Cmis Database File
-            string dbfilename = folder.DisplayName;
-            dbfilename = dbfilename.Replace("\\", "_");
-            dbfilename = dbfilename.Replace("/", "_");
-            RemoveDatabase(dbfilename);
+
+            if (repository != null)
+            {
+                //Repo found...
+                repository.CancelSync();
+                repositories.Remove(repository);
+                repository.Dispose();
+                Logger.Info("Removed Repository: " + folder.DisplayName);
+            }
+
+            RemoveDatabase(databasePath);
+            RemoveDatabase(outlookDatabasePath);
         }
 
 
@@ -363,11 +365,10 @@ namespace CmisSync
         /// <param name="folder_path">The synchronized folder whose database is to be removed</param>
         private void RemoveDatabase(string folder_path)
         {
-            string databasefile = Path.Combine(ConfigManager.CurrentConfig.ConfigPath, Path.GetFileName(folder_path) + ".cmissync");
-            if (File.Exists(databasefile))
+            if (!string.IsNullOrWhiteSpace(folder_path) && File.Exists(folder_path))
             {
-                File.Delete(databasefile);
-                Logger.Info("Removed database: " + databasefile);
+                File.Delete(folder_path);
+                Logger.Info("Removed database: " + folder_path);
             }
         }
 

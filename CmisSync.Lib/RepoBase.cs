@@ -97,7 +97,7 @@ namespace CmisSync.Lib
         /// <summary>
         /// Return the synchronized folder's information.
         /// </summary>
-        protected RepoInfo RepoInfo { get; set; }
+        public RepoInfo RepoInfo { get; protected set; }
 
 
         /// <summary>
