@@ -123,7 +123,7 @@ namespace CmisSync.Lib.Outlook
                 else
                 {
                     Logger.WarnFormat("Could not find bitness for Outlook version {0}, defaulting to 32bit", outlookVersionNumber);
-                    return true;
+                    return false;
                 }
             }
             else
