@@ -7,47 +7,24 @@ using System.Collections.Generic;
 
 namespace CmisSync.Lib.Outlook
 {
-    public class OutlookSession
+    public class OutlookSession : IDisposable
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(OutlookSession));
 
-        private Application application;
-        private NameSpace nameSpace;
-        private MAPIFolder defaultFolder;
+        private readonly Application application;
+        private readonly NameSpace nameSpace;
+        private readonly MAPIFolder defaultFolder;
         private SecurityManager securityManager;
+        private bool disposed = false;
 
-        public Application Application 
-        {
-            get
-            {
-                return application;
-            }
-        }
-
-        public NameSpace NameSpace
-        {
-            get
-            {
-                return nameSpace;
-            }
-        }
-
-        public MAPIFolder DefaultFolder
-        {
-            get
-            {
-                return defaultFolder;
-            }
-        }
-
-        public SecurityManager SecurityManager
+        private SecurityManager SecurityManager
         {
             get
             {
                 if (securityManager == null)
                 {
                     securityManager = new SecurityManager();
-                    securityManager.ConnectTo(Application);
+                    securityManager.ConnectTo(application);
                     OutlookService.checkSecurityManager(securityManager);
                 }
                 return securityManager;
@@ -61,34 +38,85 @@ namespace CmisSync.Lib.Outlook
             defaultFolder = nameSpace.GetDefaultFolder(OlDefaultFolders.olFolderInbox);
         }
 
-        public void close()
+        /// <summary>
+        /// Destructor.
+        /// </summary>
+        ~OutlookSession()
         {
-            if (securityManager != null && securityManager.DisableOOMWarnings)
+            Dispose(false);
+        }
+
+
+        /// <summary>
+        /// Implement IDisposable interface. 
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Implement IDisposable interface. 
+        /// </summary>
+        public void Close()
+        {
+            Dispose();
+        }
+
+
+        /// <summary>
+        /// Dispose pattern implementation.
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!this.disposed)
             {
-                //Ensure OOM warnings are enabled at end of session.
-                Logger.Warn("Security Manager OOM Warnings Left Disabled at end of session");
-                securityManager.DisableOOMWarnings = false;
+                if (disposing)
+                {
+                    if (securityManager != null)
+                    {
+                        if (securityManager.DisableOOMWarnings)
+                        {
+                            //Ensure OOM warnings are enabled at end of session.
+                            Logger.Warn("Security Manager OOM Warnings Left Disabled at end of session");
+                            securityManager.DisableOOMWarnings = false;
+                        }
+                        securityManager.Disconnect(application);
+                        securityManager.Dispose();
+                    }
+                }
+                this.disposed = true;
             }
-            application = null;
-            nameSpace = null;
-            defaultFolder = null;
-            securityManager = null;
         }
 
         public void sendAndRecieve()
         {
-            OutlookService.sendAndRecieve(NameSpace);
+            if (disposed)
+            {
+                throw new ObjectDisposedException(typeof(OutlookSession).Name);
+            }
+            OutlookService.sendAndRecieve(nameSpace);
         }
 
         public MAPIFolder getFolderFromID(string entryID)
         {
-            return NameSpace.GetFolderFromID(entryID);
+            if (disposed)
+            {
+                throw new ObjectDisposedException(typeof(OutlookSession).Name);
+            }
+            if (disposed) throw new ObjectDisposedException(typeof(OutlookSession).Name);
+            return nameSpace.GetFolderFromID(entryID);
         }
 
         public List<OutlookFolder> getFolderTree()
         {
+            if (disposed)
+            {
+                throw new ObjectDisposedException(typeof(OutlookSession).Name);
+            }
             List<OutlookFolder> root = new List<OutlookFolder>();
-            Folders folders = NameSpace.Folders;
+            Folders folders = nameSpace.Folders;
             fillFolderTree(root, folders);
             return root;
         }
@@ -113,6 +141,10 @@ namespace CmisSync.Lib.Outlook
 
         public MAPIFolder getFolderByPath(string folderPath)
         {
+            if (disposed)
+            {
+                throw new ObjectDisposedException(typeof(OutlookSession).Name);
+            }
             if (string.IsNullOrWhiteSpace(folderPath))
             {
                 return null;
@@ -124,7 +156,7 @@ namespace CmisSync.Lib.Outlook
             while (currentElement < pathElements.Length)
             {
                 string pathElement = pathElements[currentElement];
-                Folders folders = currentFolder != null ? currentFolder.Folders : NameSpace.Folders;
+                Folders folders = currentFolder != null ? currentFolder.Folders : nameSpace.Folders;
                 Folder foundFolder = null;
                 foreach (Folder folder in folders)
                 {
@@ -152,16 +184,28 @@ namespace CmisSync.Lib.Outlook
 
         public Email getEmail(MAPIFolder folder, MailItem mailItem)
         {
+            if (disposed)
+            {
+                throw new ObjectDisposedException(typeof(OutlookSession).Name);
+            }
             return OutlookService.getEmail(SecurityManager, folder, mailItem);
         }
         
         public List<EmailAttachment> getEmailAttachments(MailItem mailItem, Email email)
         {
+            if (disposed)
+            {
+                throw new ObjectDisposedException(typeof(OutlookSession).Name);
+            }
             return OutlookService.getEmailAttachments(SecurityManager, mailItem, email);
         }
 
         public EmailAttachment getEmailAttachmentWithTempFile(EmailAttachment emailAttachment)
         {
+            if (disposed)
+            {
+                throw new ObjectDisposedException(typeof(OutlookSession).Name);
+            }
             return OutlookService.getEmailAttachmentWithTempFile(SecurityManager, emailAttachment);
         }
     }

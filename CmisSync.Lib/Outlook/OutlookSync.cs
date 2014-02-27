@@ -125,84 +125,81 @@ namespace CmisSync.Lib.Outlook
                 return;
             }
 
-            Oris4RestSession restSession = new Oris4RestSession(repoUrl);
-            OutlookSession outlookSession = new OutlookSession();
+            Logger.InfoFormat("Outlook Sync Started: {0}", repoInfo.Name);
             try
             {
-
-                restSession.login(repoInfo.User, repoInfo.Password.ToString());
-
-                RegisterOutlookClient(restSession);
-
-                //Send and recieve emails...
-                //outlookSession.sendAndRecieve();
-
-                string[] folderPaths = repoInfo.getOutlookFolders();
-
-                foreach (string folderPath in folderPaths)
+                Oris4RestSession restSession = new Oris4RestSession(repoUrl);
+                using (OutlookSession outlookSession = new OutlookSession())
                 {
-                    MAPIFolder folder = outlookSession.getFolderByPath(folderPath);
-                    if (folder == null)
+                    restSession.login(repoInfo.User, repoInfo.Password.ToString());
+
+                    RegisterOutlookClient(restSession);
+
+                    //Send and recieve emails...
+                    //outlookSession.sendAndRecieve();
+
+                    string[] folderPaths = repoInfo.getOutlookFolders();
+
+                    foreach (string folderPath in folderPaths)
                     {
-                        Logger.ErrorFormat("Could not find selected outlook folder: {0}", folderPath);
-                        continue;
-                    }
-
-                    Logger.DebugFormat("Syncing Outlook Folder: {0}", folder.FolderPath);
-
-                    HashSet<string> allEmailsInFolder = new HashSet<string>();
-                    List<Email> emailList = new List<Email>();
-                    List<EmailAttachment> attachmentList = new List<EmailAttachment>();
-
-                    Items items = folder.Items;
-                    foreach (object item in items)
-                    {
-                        if (item is MailItem)
+                        MAPIFolder folder = outlookSession.getFolderByPath(folderPath);
+                        if (folder == null)
                         {
-                            SleepWhileSuspended();
+                            Logger.ErrorFormat("Could not find selected outlook folder: {0}", folderPath);
+                            continue;
+                        }
 
-                            MailItem mailItem = (MailItem)item;
-                            Email email = outlookSession.getEmail(folder, mailItem);
+                        Logger.DebugFormat("Syncing Outlook Folder: {0}", folder.FolderPath);
 
-                            if (EmailWorthSyncing(email))
+                        HashSet<string> allEmailsInFolder = new HashSet<string>();
+                        List<Email> emailList = new List<Email>();
+                        List<EmailAttachment> attachmentList = new List<EmailAttachment>();
+
+                        Items items = folder.Items;
+                        foreach (object item in items)
+                        {
+                            if (item is MailItem)
                             {
-                                allEmailsInFolder.Add(email.dataHash);
+                                SleepWhileSuspended();
 
-                                if (!outlookDatabase.ContainsEmail(email.dataHash))
+                                MailItem mailItem = (MailItem)item;
+                                Email email = outlookSession.getEmail(folder, mailItem);
+
+                                if (EmailWorthSyncing(email))
                                 {
-                                    emailList.Add(email);
+                                    allEmailsInFolder.Add(email.dataHash);
+
+                                    if (!outlookDatabase.ContainsEmail(email.dataHash))
+                                    {
+                                        emailList.Add(email);
+                                    }
+
+                                    attachmentList.AddRange(outlookSession.getEmailAttachments(mailItem, email));
                                 }
 
-                                attachmentList.AddRange(outlookSession.getEmailAttachments(mailItem, email));
-                            }
-
-                            if (emailList.Count >= EMAIL_BATCH_SIZE)
-                            {
-                                UploadEmails(restSession, emailList);
-                                UploadAttachments(restSession, outlookSession, attachmentList);
+                                if (emailList.Count >= EMAIL_BATCH_SIZE)
+                                {
+                                    UploadEmails(restSession, emailList);
+                                    UploadAttachments(restSession, outlookSession, attachmentList);
+                                }
                             }
                         }
+
+                        if (emailList.Count > 0)
+                        {
+                            UploadEmails(restSession, emailList);
+                            UploadAttachments(restSession, outlookSession, attachmentList);
+                        }
+
+                        DeleteObsoleteEmailsFromFolder(restSession, folderPath, allEmailsInFolder);
                     }
 
-                    if (emailList.Count > 0)
-                    {
-                        UploadEmails(restSession, emailList);
-                        UploadAttachments(restSession, outlookSession, attachmentList);
-                    }
-
-                    //TODO:: Delete left older folder items...
-                    DeleteObsoleteEmailsFromFolder(restSession, folderPath, allEmailsInFolder);
+                    DeleteObsoleteFolders(restSession, folderPaths);
                 }
-
-                DeleteObsoleteFolders(restSession, folderPaths);
             }
             finally
             {
-                restSession = null;
-                outlookSession.close();
-                outlookSession = null;
-                GC.Collect(); //Ensure Outlook objects are released.
-                GC.WaitForPendingFinalizers();
+                Logger.InfoFormat("Outlook Sync Complete: {0}", repoInfo.Name);
             }
         }
 

@@ -1,5 +1,6 @@
 using CmisSync.Lib.Cmis;
 using RestSharp;
+using System;
 using System.Collections.Generic;
 
 namespace CmisSync.Lib.Outlook
