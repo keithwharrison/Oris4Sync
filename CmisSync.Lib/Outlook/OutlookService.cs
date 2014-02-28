@@ -178,7 +178,7 @@ namespace CmisSync.Lib.Outlook
             }
         }
 
-        public static Email getEmail(SecurityManager securityManager, MAPIFolder folder, MailItem mailItem)
+        public static Email getEmail(SecurityManager securityManager, string folderPath, MailItem mailItem)
         {
             Logger.DebugFormat("Mail Item: {0}", mailItem.Subject);
 
@@ -188,7 +188,7 @@ namespace CmisSync.Lib.Outlook
                 receivedDate = mailItem.ReceivedTime,
                 sentDate = mailItem.SentOn,
                 subject = mailItem.Subject,
-                folderPath = folder.FolderPath,
+                folderPath = folderPath,
                 inReplyTo = getInReplyTo(securityManager, mailItem),
                 references = getReferences(securityManager, mailItem),
                 body = getBody(securityManager, mailItem),
@@ -201,7 +201,20 @@ namespace CmisSync.Lib.Outlook
             return email;
         }
 
-        public static List<EmailAttachment> getEmailAttachments(SecurityManager securityManager, MailItem mailItem, Email email)
+        public static int getEmailAttachmentCount(SecurityManager securityManager, MailItem mailItem)
+        {
+            try
+            {
+                securityManager.DisableOOMWarnings = true;
+                return mailItem.Attachments.Count;
+            }
+            finally
+            {
+                securityManager.DisableOOMWarnings = false;
+            }
+        }
+
+        public static List<EmailAttachment> getEmailAttachments(SecurityManager securityManager, string folderPath, MailItem mailItem, Email email)
         {
             try
             {
@@ -213,10 +226,11 @@ namespace CmisSync.Lib.Outlook
                     emailAttachments.Add(new EmailAttachment()
                     {
                         emailDataHash = email.dataHash,
+                        folderPath = folderPath,
                         fileName = attachment.DisplayName,
                         name = attachment.DisplayName,
                         fileSize = attachment.Size,
-                        folderPath = email.folderPath,
+                        entryID = email.entryID,
                         attachment = attachment,
                     });
                 }

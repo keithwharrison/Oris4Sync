@@ -47,6 +47,8 @@ namespace CmisSync.Lib.Outlook
         [JsonIgnore]
         public string tempFilePath { get; set; }
         [JsonIgnore]
+        public string entryID { get; set; }
+        [JsonIgnore]
         public Attachment attachment { get; set; }
     }
     

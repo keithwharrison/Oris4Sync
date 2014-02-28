@@ -2,6 +2,7 @@ using log4net;
 using Microsoft.Office.Interop.Outlook;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 
 namespace CmisSync.Lib.Outlook
@@ -162,7 +163,19 @@ namespace CmisSync.Lib.Outlook
                         List<Email> emailList = new List<Email>();
                         List<EmailAttachment> attachmentList = new List<EmailAttachment>();
 
-                        Items items = folder.Items;
+                        Items items = null;
+
+                        //DateTime? lastUploadedDate = outlookDatabase.GetLastUploadedDate(folderPath);
+                        //if (!fullSync && lastUploadedDate != null)
+                        //{
+                        //    string filter = string.Format("[LastModificationTime] > '{0}'", ((DateTime)lastUploadedDate).ToString("g"));
+                        //    Logger.DebugFormat("Items Filter: {0}", filter);
+                        //    items = folder.Items.Restrict(filter);
+                        //} 
+                        //else
+                        //{
+                            items = folder.Items;
+                        //}
                         foreach (object item in items)
                         {
                             if (item is MailItem)
@@ -170,18 +183,33 @@ namespace CmisSync.Lib.Outlook
                                 SleepWhileSuspended();
 
                                 MailItem mailItem = (MailItem)item;
-                                Email email = outlookSession.getEmail(folder, mailItem);
+                                string entryId = mailItem.EntryID;
 
-                                if (EmailWorthSyncing(email))
+                                if (EmailWorthSyncing(mailItem))
                                 {
-                                    allEmailsInFolder.Add(email.dataHash);
+                                    allEmailsInFolder.Add(entryId);
 
-                                    if (!outlookDatabase.ContainsEmail(email.dataHash))
+                                    if (!outlookDatabase.ContainsEmail(folderPath, entryId))
                                     {
+                                        Email email = outlookSession.getEmail(folderPath, mailItem);
                                         emailList.Add(email);
+                                        attachmentList.AddRange(outlookSession.getEmailAttachments(folderPath, mailItem, email));
                                     }
-
-                                    attachmentList.AddRange(outlookSession.getEmailAttachments(mailItem, email));
+                                    else
+                                    {
+                                        //Database already contains the email
+                                        int attachmentCount = outlookSession.getEmailAttachmentCount(mailItem);
+                                        if (attachmentCount > 0)
+                                        {
+                                            int databaseAttachmentCount = outlookDatabase.CountAttachments(folderPath, entryId);
+                                            if (attachmentCount > databaseAttachmentCount)
+                                            {
+                                                //Email has more attachments than exist in database...
+                                                Email email = outlookSession.getEmail(folderPath, mailItem);
+                                                attachmentList.AddRange(outlookSession.getEmailAttachments(folderPath, mailItem, email));
+                                            }
+                                        }
+                                    }
                                 }
 
                                 if (emailList.Count >= EMAIL_BATCH_SIZE)
@@ -198,10 +226,16 @@ namespace CmisSync.Lib.Outlook
                             UploadAttachments(restSession, outlookSession, attachmentList);
                         }
 
-                        DeleteObsoleteEmailsFromFolder(restSession, folderPath, allEmailsInFolder);
+                        //if (fullSync)
+                        //{
+                            DeleteObsoleteEmailsFromFolder(restSession, folderPath, allEmailsInFolder);
+                        //}
                     }
 
-                    DeleteObsoleteFolders(restSession, folderPaths);
+                    //if (fullSync)
+                    //{
+                        DeleteObsoleteFolders(restSession, folderPaths);
+                    //}
                 }
             }
             finally
@@ -227,13 +261,13 @@ namespace CmisSync.Lib.Outlook
                 SleepWhileSuspended();
                 //TODO: Ask user if they are sure before putting a new client ID (all emails deleted)
                 Logger.InfoFormat("Registering a new Outlook client ID: {0}", clientId);
-                restSession.putRegisteredClient(clientId);
                 outlookDatabase.RemoveAllEmails();
                 outlookDatabase.SetClientId(clientId);
+                restSession.putRegisteredClient(clientId);
             }
         }
 
-        private bool EmailWorthSyncing(Email email)
+        private bool EmailWorthSyncing(MailItem mailItem)
         {
 
             return true;
@@ -259,7 +293,7 @@ namespace CmisSync.Lib.Outlook
                     if (emailKeyMap.ContainsKey(email.dataHash))
                     {
                         long emailKey = emailKeyMap[email.dataHash];
-                        outlookDatabase.AddEmail(email.dataHash, email.folderPath, email.entryID, emailKey, DateTime.Now);
+                        outlookDatabase.AddEmail(email.folderPath, email.entryID, email.dataHash, emailKey, DateTime.Now);
                         Logger.InfoFormat("Added email to database: {0}\\{1}", email.folderPath, email.dataHash);
                     }
                     else
@@ -284,20 +318,20 @@ namespace CmisSync.Lib.Outlook
 
             try
             {
-                HashSet<string> emailsInDatabase = outlookDatabase.ListEmailDataHashes(folderPath);
+                HashSet<string> emailsInDatabase = outlookDatabase.ListEntryIds(folderPath);
                 List<string> obsoleteEmails = new List<string>();
-                foreach (string dataHash in emailsInDatabase)
+                foreach (string entryId in emailsInDatabase)
                 {
-                    if (!emailsInFolder.Contains(dataHash))
+                    if (!emailsInFolder.Contains(entryId))
                     {
-                        obsoleteEmails.Add(dataHash);
+                        obsoleteEmails.Add(entryId);
                     }
                 }
 
                 if (obsoleteEmails.Count > 0)
                 {
                     Logger.InfoFormat("Deleting {0} emails on server from folder: {1}", obsoleteEmails.Count, folderPath);
-                    DeleteEmails(restSession, obsoleteEmails);
+                    DeleteEmails(restSession, folderPath, obsoleteEmails);
                 }
             }
             catch (System.Exception e)
@@ -320,9 +354,9 @@ namespace CmisSync.Lib.Outlook
                     if (!currentFolders.Contains(folderPath))
                     {
                         //Folder is obsolete
-                        List<string> obsoleteEmails = new List<string>(outlookDatabase.ListEmailDataHashes(folderPath));
+                        List<string> obsoleteEmails = new List<string>(outlookDatabase.ListEntryIds(folderPath));
                         Logger.InfoFormat("Deleting {0} emails on server from folder: {1}", obsoleteEmails.Count, folderPath);
-                        DeleteEmails(restSession, obsoleteEmails);
+                        DeleteEmails(restSession, folderPath, obsoleteEmails);
                     }
                 }
             }
@@ -333,31 +367,38 @@ namespace CmisSync.Lib.Outlook
         }
 
 
-        private void DeleteEmails(Oris4RestSession restSession, List<string> emailsToDelete)
+        private void DeleteEmails(Oris4RestSession restSession, string folderPath, List<string> emailsToDelete)
         {
             SleepWhileSuspended();
 
-            foreach (string dataHash in emailsToDelete)
+            foreach (string entryId in emailsToDelete)
             {
-                DeleteEmail(restSession, dataHash);
+                DeleteEmail(restSession, folderPath, entryId);
             }
         }
 
-        private void DeleteEmail(Oris4RestSession restSession, string dataHash)
+        private void DeleteEmail(Oris4RestSession restSession, string folderPath, string entryId)
         {
             SleepWhileSuspended();
 
             try
             {
+                string dataHash = outlookDatabase.GetEmailDataHash(folderPath, entryId);
+                if (dataHash == null)
+                {
+                    Logger.WarnFormat("Could not find email in database: {0}\\{1}", folderPath, entryId);
+                    return;
+                }
+
                 Logger.InfoFormat("Deleting email from server: {0}", dataHash);
                 restSession.deleteEmail(dataHash);
 
-                outlookDatabase.RemoveEmail(dataHash);
-                Logger.InfoFormat("Deleted email from database: {0}", dataHash);
+                outlookDatabase.RemoveEmail(folderPath, entryId);
+                Logger.InfoFormat("Deleted email from database: {0}\\{1}", folderPath, entryId);
             }
             catch (System.Exception e)
             {
-                ProcessRecoverableException("Could not delete email: " + dataHash, e);
+                ProcessRecoverableException(string.Format("Could not delete email: {0}\\{1}", folderPath, entryId), e);
             }
         }
 
@@ -370,8 +411,8 @@ namespace CmisSync.Lib.Outlook
                 foreach (EmailAttachment emailAttachment in emailAttachments)
                 {
                     if (AttachmentWorthSyncing(emailAttachment) &&
-                        outlookDatabase.ContainsEmail(emailAttachment.emailDataHash) &&
-                        !outlookDatabase.ContainsAttachment(emailAttachment.emailDataHash, emailAttachment.fileName, emailAttachment.fileSize))
+                        outlookDatabase.ContainsEmail(emailAttachment.folderPath, emailAttachment.entryID) &&
+                        !outlookDatabase.ContainsAttachment(emailAttachment.folderPath, emailAttachment.entryID, emailAttachment.fileName, emailAttachment.fileSize))
                     {
                         UploadAttachment(restSession, outlookSession, emailAttachment);
                     }
@@ -397,12 +438,12 @@ namespace CmisSync.Lib.Outlook
 
                 try
                 {
-                    Logger.InfoFormat("Uploading attachment to server: {0}\\{1} ({2})", emailAttachment.folderPath, emailAttachment.fileName, emailAttachment.emailDataHash);
+                    Logger.InfoFormat("Uploading attachment to server: {0}\\{1}\\{2}", emailAttachment.folderPath, emailAttachment.entryID, emailAttachment.fileName);
                     string returnValue = restSession.insertAttachment(emailAttachment, File.ReadAllBytes(emailAttachment.tempFilePath));
 
-                    outlookDatabase.AddAttachment(emailAttachment.emailDataHash, emailAttachment.fileName, emailAttachment.fileSize,
-                        emailAttachment.folderPath, emailAttachment.dataHash, DateTime.Now);
-                    Logger.InfoFormat("Added attachment to database: {0}\\{1} ({2})", emailAttachment.folderPath, emailAttachment.fileName, emailAttachment.emailDataHash);
+                    outlookDatabase.AddAttachment(emailAttachment.folderPath, emailAttachment.entryID, emailAttachment.fileName, emailAttachment.fileSize,
+                        emailAttachment.emailDataHash, emailAttachment.dataHash, DateTime.Now);
+                    Logger.InfoFormat("Added attachment to database: {0}\\{1}\\{2}", emailAttachment.folderPath, emailAttachment.entryID, emailAttachment.fileName);
                 }
                 finally
                 {

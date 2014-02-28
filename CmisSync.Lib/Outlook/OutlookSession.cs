@@ -151,30 +151,20 @@ namespace CmisSync.Lib.Outlook
             }
 
             string[] pathElements = folderPath.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
-            int currentElement = 0;
-            Folder currentFolder = null;
-            while (currentElement < pathElements.Length)
+            Folders currentFolderList = nameSpace.Folders;
+            MAPIFolder currentFolder = null;
+            foreach (string pathElement in pathElements)
             {
-                string pathElement = pathElements[currentElement];
-                Folders folders = currentFolder != null ? currentFolder.Folders : nameSpace.Folders;
-                Folder foundFolder = null;
-                foreach (Folder folder in folders)
+                MAPIFolder folder = currentFolderList[pathElement];
+                currentFolder = folder;
+                if (currentFolder != null)
                 {
-                    if (folder.Name.Equals(pathElement))
-                    {
-                        foundFolder = folder;
-                        break;
-                    }
+                    Folders folderList = currentFolder.Folders;
+                    currentFolderList = folderList;
                 }
-
-                if (foundFolder != null)
+                else
                 {
-                    currentFolder = foundFolder;
-                    currentElement++;
-                }
-                else 
-                {
-                    break;
+                    return null; //folder not found
                 }
             }
 
@@ -182,22 +172,31 @@ namespace CmisSync.Lib.Outlook
                 currentFolder : null;
         }
 
-        public Email getEmail(MAPIFolder folder, MailItem mailItem)
+        public Email getEmail(string folderPath, MailItem mailItem)
         {
             if (disposed)
             {
                 throw new ObjectDisposedException(typeof(OutlookSession).Name);
             }
-            return OutlookService.getEmail(SecurityManager, folder, mailItem);
+            return OutlookService.getEmail(SecurityManager, folderPath, mailItem);
+        }
+
+        public int getEmailAttachmentCount(MailItem mailItem)
+        {
+            if (disposed)
+            {
+                throw new ObjectDisposedException(typeof(OutlookSession).Name);
+            }
+            return OutlookService.getEmailAttachmentCount(SecurityManager, mailItem);
         }
         
-        public List<EmailAttachment> getEmailAttachments(MailItem mailItem, Email email)
+        public List<EmailAttachment> getEmailAttachments(string folderPath, MailItem mailItem, Email email)
         {
             if (disposed)
             {
                 throw new ObjectDisposedException(typeof(OutlookSession).Name);
             }
-            return OutlookService.getEmailAttachments(SecurityManager, mailItem, email);
+            return OutlookService.getEmailAttachments(SecurityManager, folderPath, mailItem, email);
         }
 
         public EmailAttachment getEmailAttachmentWithTempFile(EmailAttachment emailAttachment)
