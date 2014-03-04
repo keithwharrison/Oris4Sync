@@ -224,6 +224,10 @@ namespace CmisSync.Lib.Sync
             {
                 if (repoInfo.OutlookEnabled)
                 {
+                    if (outlookSync != null)
+                    {
+                        outlookSync.Dispose();
+                    }
                     outlookSync = new CmisSync.Lib.Outlook.OutlookSync(repoInfo, SleepWhileSuspended, ProcessRecoverableException);
                 }
             }

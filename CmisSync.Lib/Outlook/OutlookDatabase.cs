@@ -94,7 +94,7 @@ namespace CmisSync.Lib.Outlook
             {
                 try
                 {
-                    Logger.Info(String.Format("Checking whether database {0} exists", databaseFileName));
+                    Logger.InfoFormat("Checking whether database {0} exists", databaseFileName);
                     bool createDatabase = !File.Exists(databaseFileName);
 
                     sqliteConnection = new SQLiteConnection("Data Source=" + databaseFileName + ";PRAGMA journal_mode=WAL;");
@@ -252,7 +252,7 @@ namespace CmisSync.Lib.Outlook
             }
             return entryIdSet;
         }
-        
+
         /// <summary>
         /// List all email data hashes for folder.
         /// </summary>
@@ -289,7 +289,7 @@ namespace CmisSync.Lib.Outlook
             }
             return null;
         }
-        
+
         /// <summary>
         /// Add a file to the database.
         /// If checksum is not null, it will be used for the database entry
@@ -309,7 +309,7 @@ namespace CmisSync.Lib.Outlook
                 Logger.WarnFormat("Bad emailDataHash for {0}\\{1}\\{2}", folderPath, entryId, fileName);
                 return;
             }
-            
+
             if (String.IsNullOrEmpty(dataHash))
             {
                 Logger.WarnFormat("Bad dataHash for {0}\\{1}\\{2}", folderPath, entryId, fileName);
@@ -379,7 +379,7 @@ namespace CmisSync.Lib.Outlook
                 @"SELECT count(*) FROM attachments WHERE folderPath=@folderPath AND entryId=@entryId", parameters);
             return (int)(long)obj;
         }
-        
+
         /// <summary>
         /// Get client ID.
         /// </summary>
@@ -400,7 +400,7 @@ namespace CmisSync.Lib.Outlook
             parameters.Add("value", ClientId);
             ExecuteSQLAction("INSERT OR REPLACE INTO general (key, value) VALUES (@key, @value)", parameters);
         }
-        
+
         /// <summary>
         /// Helper method to execute an SQL command that does not return anything.
         /// </summary>
@@ -458,13 +458,15 @@ namespace CmisSync.Lib.Outlook
                 try
                 {
                     ComposeSQLCommand(command, text, parameters);
-                    SQLiteDataReader reader = command.ExecuteReader();
-                    List<NameValueCollection> rowList = new List<NameValueCollection>();
-                    while (reader.Read())
+                    using (SQLiteDataReader reader = command.ExecuteReader())
                     {
-                        rowList.Add(reader.GetValues());
+                        List<NameValueCollection> rowList = new List<NameValueCollection>();
+                        while (reader.Read())
+                        {
+                            rowList.Add(reader.GetValues());
+                        }
+                        return rowList;
                     }
-                    return rowList;
                 }
                 catch (SQLiteException e)
                 {
