@@ -353,17 +353,27 @@ namespace CmisSync.Lib.Outlook
                 List<EmailContact> contacts = new List<EmailContact>();
 
                 //Sender...
-                contacts.Add(new EmailContact()
+                if (Utils.IsValidEmail(mailItem.SenderEmailAddress))
                 {
-                    emailAddress = mailItem.SenderEmailAddress,
-                    emailContactType = "From",
-                });
+                    contacts.Add(new EmailContact()
+                    {
+                        emailAddress = mailItem.SenderEmailAddress,
+                        emailContactType = "From",
+                    });
+                }
 
                 //Recipients...
                 Recipients recipients = mailItem.Recipients;
                 foreach (Recipient recipient in recipients)
                 {
-                    contacts.Add(getEmailRecipient(recipient));
+                    if (Utils.IsValidEmail(recipient.Address))
+                    {
+                        contacts.Add(getEmailRecipient(recipient));
+                    }
+                    else
+                    {
+                        Logger.DebugFormat("Not a valid email address: {0} <{1}>", recipient.Name, recipient.Address);
+                    }
                 }
 
                 return contacts;

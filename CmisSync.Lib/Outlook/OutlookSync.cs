@@ -163,19 +163,7 @@ namespace CmisSync.Lib.Outlook
                         List<Email> emailList = new List<Email>();
                         List<EmailAttachment> attachmentList = new List<EmailAttachment>();
 
-                        Items items = null;
-
-                        //DateTime? lastUploadedDate = outlookDatabase.GetLastUploadedDate(folderPath);
-                        //if (!fullSync && lastUploadedDate != null)
-                        //{
-                        //    string filter = string.Format("[LastModificationTime] > '{0}'", ((DateTime)lastUploadedDate).ToString("g"));
-                        //    Logger.DebugFormat("Items Filter: {0}", filter);
-                        //    items = folder.Items.Restrict(filter);
-                        //} 
-                        //else
-                        //{
-                            items = folder.Items;
-                        //}
+                        Items items = folder.Items;
                         foreach (object item in items)
                         {
                             if (item is MailItem)
@@ -226,16 +214,10 @@ namespace CmisSync.Lib.Outlook
                             UploadAttachments(restSession, outlookSession, attachmentList);
                         }
 
-                        //if (fullSync)
-                        //{
-                            DeleteObsoleteEmailsFromFolder(restSession, folderPath, allEmailsInFolder);
-                        //}
+                        DeleteObsoleteEmailsFromFolder(restSession, folderPath, allEmailsInFolder);
                     }
 
-                    //if (fullSync)
-                    //{
-                        DeleteObsoleteFolders(restSession, folderPaths);
-                    //}
+                    DeleteObsoleteFolders(restSession, folderPaths);
                 }
             }
             finally

@@ -7,6 +7,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Net.Mail;
 #if __MonoCS__
 //using Mono.Unix.Native;
 #endif
@@ -455,6 +456,22 @@ namespace CmisSync.Lib
                 formatted.AppendFormat(format, b);
             }
             return formatted.ToString();
+        }
+
+        /// <summary>
+        /// Determine if email address is valid.
+        /// </summary>
+        public static bool IsValidEmail(string emailAddress)
+        {
+            try
+            {
+                MailAddress address = new MailAddress(emailAddress);
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
         }
     }
 }
