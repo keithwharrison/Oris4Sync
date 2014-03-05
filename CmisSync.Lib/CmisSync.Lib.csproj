@@ -57,7 +57,7 @@
       <HintPath>..\Extras\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="RestSharp">
-      <HintPath>..\CmisSync\Windows\packages\RestSharp.104.4.0\lib\net4\RestSharp.dll</HintPath>
+      <HintPath>..\CmisSync\Windows\packages\RestSharpSigned.104.1\lib\net4\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="SecurityManager.2005, Version=7.2.3142.2005, Culture=neutral, PublicKeyToken=aa42cad61af07cf4, processorArchitecture=MSIL" />
     <Reference Include="System" />

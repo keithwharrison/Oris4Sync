@@ -82,6 +82,7 @@
     <Content Include="logo.png" />
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
+	<Import Project="..\CodeSigning.targets" />
   <Target Name="BeforeBuild">
     <GetAssemblyIdentity AssemblyFiles="..\bin\$(Platform)\$(Configuration)\Oris4Sync.exe">
       <Output TaskParameter="Assemblies" ItemName="AssemblyVersion" />

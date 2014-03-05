@@ -44,3 +44,4 @@ cmissync-*.tar*
 build/cmissync.spec
 /.project
 ConfigOverride.cs
+CodeSigning.targets

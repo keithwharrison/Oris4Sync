@@ -468,7 +468,7 @@ namespace CmisSync.Lib
                 MailAddress address = new MailAddress(emailAddress);
                 return true;
             }
-            catch (Exception e)
+            catch
             {
                 return false;
             }

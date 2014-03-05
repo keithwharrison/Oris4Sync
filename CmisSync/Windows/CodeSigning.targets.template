@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<PropertyGroup>
+		<SignOutput>true</SignOutput>
+	</PropertyGroup>
+
+	<Target Name="GetSignToolProperties">
+    <PropertyGroup>
+      <SignToolPath>$(WindowsSDK80Path)bin\x86\signtool.exe</SignToolPath>
+			<CodeSigningKeyPath>..\..\..\VersionInfo\TestCodeSigning.pfx</CodeSigningKeyPath>
+			<CodeSigningPassword>asdf1234</CodeSigningPassword>
+			<CodeSigningTimeStamper>http://timestamp.verisign.com/scripts/timstamp.dll</CodeSigningTimeStamper>
+   </PropertyGroup>
+  </Target>
+
+	<Target Name="SignCabs" DependsOnTargets="GetSignToolProperties">
+		<Exec Command="&quot;$(SignToolPath)&quot; sign /f &quot;$(CodeSigningKeyPath)&quot; /p &quot;$(CodeSigningPassword)&quot; /t &quot;$(CodeSigningTimeStamper)&quot; /v /d &quot;%(SignCabs.Filename)&quot; &quot;@(SignCabs)&quot;" />
+	</Target>
+	
+	<Target Name="SignMsi" DependsOnTargets="GetSignToolProperties">
+		<Exec Command="&quot;$(SignToolPath)&quot; sign /f &quot;$(CodeSigningKeyPath)&quot; /p &quot;$(CodeSigningPassword)&quot; /t &quot;$(CodeSigningTimeStamper)&quot; /v /d &quot;%(SignMsi.Filename)&quot; &quot;@(SignMsi)&quot;" />
+	</Target>
+
+	<Target Name="SignBundleEngine" DependsOnTargets="GetSignToolProperties">
+		<Exec Command="&quot;$(SignToolPath)&quot; sign /f &quot;$(CodeSigningKeyPath)&quot; /p &quot;$(CodeSigningPassword)&quot; /t &quot;$(CodeSigningTimeStamper)&quot; /v /d &quot;%(SignBundleEngine.Filename)&quot; &quot;@(SignBundleEngine)&quot;" />
+	</Target>
+
+	<Target Name="SignBundle" DependsOnTargets="GetSignToolProperties">
+		<Exec Command="&quot;$(SignToolPath)&quot; sign /f &quot;$(CodeSigningKeyPath)&quot; /p &quot;$(CodeSigningPassword)&quot; /t &quot;$(CodeSigningTimeStamper)&quot; /v /d &quot;%(SignBundle.Filename)&quot; &quot;@(SignBundle)&quot;" />
+	</Target>
+
+</Project>		
+
