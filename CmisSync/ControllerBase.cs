@@ -36,6 +36,16 @@ namespace CmisSync
         protected static readonly ILog Logger = LogManager.GetLogger(typeof(ControllerBase));
 
         /// <summary>
+        /// Auto update URL.
+        /// </summary>
+        private static readonly string AUTO_UPDATE_URL =
+        #if (DEBUG)
+            "http://update.oris4.com/debug/versioninfo.xml";
+        #else
+            "http://update.oris4.com/versioninfo.xml";
+        #endif
+
+        /// <summary>
         /// Whether it is the first time that CmisSync is being run.
         /// </summary>
         private bool firstRun;
@@ -228,14 +238,14 @@ namespace CmisSync
 
             folderLock = new FolderLock(FoldersPath);
 
-            autoUpdater = new Sparkle("http://update.oris4.com/versioninfo.xml")
+            autoUpdater = new Sparkle(AUTO_UPDATE_URL)
             {
-                //ShowDiagnosticWindow = true,
-                //EnableSystemProfiling = true,
-                //SystemProfileUrl = new Uri("http://update.oris4.com/profile.html"),
+                ShowDiagnosticWindow = false,
+                EnableSystemProfiling = true,
+                SystemProfileUrl = new Uri(AUTO_UPDATE_URL),
             };
             autoUpdater.ApplicationWindowIcon = UIHelpers.GetIcon("classic_folder_web");
-            autoUpdater.StartLoop(true, true);
+            autoUpdater.StartLoop(true);
         }
 
 

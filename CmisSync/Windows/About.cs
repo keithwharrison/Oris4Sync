@@ -80,10 +80,14 @@ namespace CmisSync {
             };
         
             image.Source = UIHelpers.GetImageSource ("about");
-            
+
+            string versionString = "Version " + Controller.RunningVersion;
+            #if (DEBUG)
+                versionString += " (DEBUG)";
+            #endif
             
             Label version = new Label () {
-                Content    = "Version " + Controller.RunningVersion,
+                Content    = versionString,
                 FontSize   = 11,
                 Foreground = new SolidColorBrush (Color.FromRgb (135, 178, 227))
             };

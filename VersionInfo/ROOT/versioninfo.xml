@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"  xmlns:dc="http://purl.org/dc/elements/1.1/">
+	<channel>
+		<title>Oris4Sync Version Info</title>
+		<link>http://update.oris4.com/versioninfo.xml</link>
+		<language>en</language>
+
+		<item>
+			<title>Version 3.1.1.0</title>
+			<description><![CDATA[
+				<div style="font-family: 'Lucida Grande', Arial, sans-serif; font-size: 9pt; padding: 3px;"> 	<h1 style="font-size: 9pt; background-color: #e6edff; border: dotted 1px #ccc; margin: 0; padding: 3px;"> 		New in Release 3.1.1.0 	</h1> 	<div style="border: dotted 1px #ccc; border-width: 0 1px 1px 1px; padding: 3px; margin: 0 0 12px 0;"> 		<ul> 			<li>Added Outlook sync capabilities.</li> 			<li>Updated installer to install a 32bit version on 32bit machines and a 64bit version on 64bit machines.</li> 		</ul> 	</div> </div>
+			]]></description>
+ 			<pubDate>Thu, 20 Feb 2014 17:14:56 GMT</pubDate>
+			<enclosure url="http://update.oris4.com/Oris4Sync.3.1.1.0.exe"
+				sparkle:version="3.1.1.0"
+				length="3658384"
+				type="application/octet-stream"
+				sparkle:dsaSignature="svRUI6pgt85dfdDYwwmX2qDbjxIu6dlRfHrmdgH0VzdcrF3ssFVpQw=="/>
+		</item>
+
+		<item>
+			<title>Version 3.0.2.0</title>
+			<description><![CDATA[
+				<div style="font-family: 'Lucida Grande', Arial, sans-serif; font-size: 9pt; padding: 3px;"> 	<h1 style="font-size: 9pt; background-color: #e6edff; border: dotted 1px #ccc; margin: 0; padding: 3px;"> 		New in Release 3.0.2.0 	</h1> 	<div style="border: dotted 1px #ccc; border-width: 0 1px 1px 1px; padding: 3px; margin: 0 0 12px 0;"> 		<ul> 			<li>Removed the auto update diagnostics dialog.</li> 		</ul> 	</div> </div>
+			]]></description>
+ 			<pubDate>Thu, 20 Feb 2014 15:10:02 GMT</pubDate>
+			<enclosure url="http://update.oris4.com/Oris4Sync.3.0.2.0.exe"
+				sparkle:version="3.0.2.0"
+				length="2541803"
+				type="application/octet-stream"
+				sparkle:dsaSignature="bA1kKokg7+4kCbYlSiuvoj/TVY5bN3HLDAe71Vsx6GnR5KXMifsgVw=="/>
+		</item>
+
+	</channel>
+</rss>
+
