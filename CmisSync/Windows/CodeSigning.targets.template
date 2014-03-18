@@ -8,18 +8,30 @@
 	<Target Name="GetSignToolProperties">
     <PropertyGroup>
       <SignToolPath>$(WindowsSDK80Path)bin\x86\signtool.exe</SignToolPath>
-			<CodeSigningKeyPath>..\..\..\VersionInfo\TestCodeSigning.pfx</CodeSigningKeyPath>
+			<CodeSigningKeyPath>$(MSBuildThisFileDirectory)..\..\VersionInfo\TestCodeSigning.pfx</CodeSigningKeyPath>
 			<CodeSigningPassword>asdf1234</CodeSigningPassword>
-			<CodeSigningTimeStamper>http://timestamp.verisign.com/scripts/timstamp.dll</CodeSigningTimeStamper>
+			<CodeSigningTimeStamper>http://tsa.starfieldtech.com/</CodeSigningTimeStamper>
    </PropertyGroup>
   </Target>
 
+	<Target Name="SignExe" DependsOnTargets="GetSignToolProperties">
+		<Exec Command="&quot;$(SignToolPath)&quot; sign /f &quot;$(CodeSigningKeyPath)&quot; /p &quot;$(CodeSigningPassword)&quot; /t &quot;$(CodeSigningTimeStamper)&quot; /v /d &quot;$(AssemblyName)&quot; &quot;$(OutputPath)$(AssemblyName).exe&quot;" />
+	</Target>
+	
+	<Target Name="SignMsm" DependsOnTargets="GetSignToolProperties">
+		<Exec Command="&quot;$(SignToolPath)&quot; sign /f &quot;$(CodeSigningKeyPath)&quot; /p &quot;$(CodeSigningPassword)&quot; /t &quot;$(CodeSigningTimeStamper)&quot; /v /d &quot;%(SignMsm.Filename)&quot; &quot;@(SignMsm)&quot;" />
+	</Target>
+	
 	<Target Name="SignCabs" DependsOnTargets="GetSignToolProperties">
 		<Exec Command="&quot;$(SignToolPath)&quot; sign /f &quot;$(CodeSigningKeyPath)&quot; /p &quot;$(CodeSigningPassword)&quot; /t &quot;$(CodeSigningTimeStamper)&quot; /v /d &quot;%(SignCabs.Filename)&quot; &quot;@(SignCabs)&quot;" />
 	</Target>
 	
 	<Target Name="SignMsi" DependsOnTargets="GetSignToolProperties">
 		<Exec Command="&quot;$(SignToolPath)&quot; sign /f &quot;$(CodeSigningKeyPath)&quot; /p &quot;$(CodeSigningPassword)&quot; /t &quot;$(CodeSigningTimeStamper)&quot; /v /d &quot;%(SignMsi.Filename)&quot; &quot;@(SignMsi)&quot;" />
+	</Target>
+
+	<Target Name="SignContainers" DependsOnTargets="GetSignToolProperties">
+		<Exec Command="&quot;$(SignToolPath)&quot; sign /f &quot;$(CodeSigningKeyPath)&quot; /p &quot;$(CodeSigningPassword)&quot; /t &quot;$(CodeSigningTimeStamper)&quot; /v /d &quot;%(SignContainers.Filename)&quot; &quot;@(SignContainers)&quot;" />
 	</Target>
 
 	<Target Name="SignBundleEngine" DependsOnTargets="GetSignToolProperties">

@@ -114,5 +114,8 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+	<Import Project="..\CmisSync\Windows\CodeSigning.targets" />
+	<Target Name="AfterBuild">
+		<CallTarget Targets="SignExe"/>
+  </Target>	
 </Project>
