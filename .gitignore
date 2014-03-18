@@ -45,3 +45,4 @@ build/cmissync.spec
 /.project
 ConfigOverride.cs
 CodeSigning.targets
+Oris4.pfx
