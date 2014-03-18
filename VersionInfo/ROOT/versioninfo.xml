@@ -15,7 +15,7 @@
 				sparkle:version="3.1.1.0"
 				length="3658384"
 				type="application/octet-stream"
-				sparkle:dsaSignature="svRUI6pgt85dfdDYwwmX2qDbjxIu6dlRfHrmdgH0VzdcrF3ssFVpQw=="/>
+				sparkle:dsaSignature="lXNmZXRa6fA200Grh1v27jQnPP525Q2uiJBbMiyJA/tvFkbUoO8f3w=="/>
 		</item>
 
 		<item>
@@ -28,7 +28,7 @@
 				sparkle:version="3.0.2.0"
 				length="2541803"
 				type="application/octet-stream"
-				sparkle:dsaSignature="bA1kKokg7+4kCbYlSiuvoj/TVY5bN3HLDAe71Vsx6GnR5KXMifsgVw=="/>
+				sparkle:dsaSignature="ytQa0op2OrSVNLA78OitvxLcwPvh+mK50ZDu8e/FmRdPV1fDuSTeIw=="/>
 		</item>
 
 	</channel>
