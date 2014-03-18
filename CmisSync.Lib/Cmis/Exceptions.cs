@@ -138,6 +138,40 @@ namespace CmisSync.Lib.Cmis
     }
 
     /// <summary>
+    /// Exception launched when an external user tries to access sync.
+    /// </summary>
+    [Serializable]
+    public class ExternalUserException : PermissionDeniedException
+    {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public ExternalUserException() { }
+
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public ExternalUserException(string message) : base(message) { }
+
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public ExternalUserException(string message, Exception inner) : base(message, inner) { }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public ExternalUserException(Exception inner) : base(inner) { }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        protected ExternalUserException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
+
+    /// <summary>
     /// Exception launched server is busy.
     /// </summary>
     [Serializable]

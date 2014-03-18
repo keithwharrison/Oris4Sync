@@ -418,7 +418,17 @@ namespace CmisSync {
         
         /// <summary>
         ///   Looks up a localized string similar to Login failed!
-        /// Please check your user credentials and potentially the server URL..
+        ///External users do not have permission to use sync..
+        /// </summary>
+        internal static string LoginFailedExternalUser {
+            get {
+                return ResourceManager.GetString("LoginFailedExternalUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Login failed! 
+        ///Please check your user credentials and potentially the server URL..
         /// </summary>
         internal static string LoginFailedForbidden {
             get {
@@ -427,7 +437,8 @@ namespace CmisSync {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Login failed! Your account has been locked..
+        ///   Looks up a localized string similar to Login failed!
+        ///Your account has been locked..
         /// </summary>
         internal static string LoginFailedLocked {
             get {

@@ -423,7 +423,11 @@ namespace CmisSync
                                         if (e is AccountLockedException)
                                         {
                                             warning = Properties_Resources.LoginFailedLocked;
-                                        } 
+                                        }
+                                        else if (e is ExternalUserException)
+                                        {
+                                            warning = Properties_Resources.LoginFailedExternalUser;
+                                        }
                                         else if (e is PermissionDeniedException)
                                         {
                                             warning = Properties_Resources.LoginFailedForbidden;
@@ -1238,7 +1242,11 @@ namespace CmisSync
                                             if (e is AccountLockedException)
                                             {
                                                 warning = Properties_Resources.LoginFailedLocked;
-                                            } 
+                                            }
+                                            else if (e is ExternalUserException)
+                                            {
+                                                warning = Properties_Resources.LoginFailedExternalUser;
+                                            }
                                             else if (e is PermissionDeniedException)
                                             {
                                                 warning = Properties_Resources.LoginFailedForbidden;

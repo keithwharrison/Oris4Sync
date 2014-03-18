@@ -282,8 +282,8 @@ Please check the given URL for misspelled host name.
 If the URL is correct, please contact your server administrator!</value>
   </data>
   <data name="LoginFailedForbidden" xml:space="preserve">
-    <value>Login failed!
- Please check your user credentials and potentially the server URL.</value>
+    <value>Login failed! 
+Please check your user credentials and potentially the server URL.</value>
   </data>
   <data name="SendFailureHttps" xml:space="preserve">
     <value>Failed to communicate with the given server! 
@@ -375,6 +375,11 @@ Please check the protocol part of the given URL. Maybe your server is not capabl
     <value>Outlook</value>
   </data>
   <data name="LoginFailedLocked" xml:space="preserve">
-    <value>Login failed! Your account has been locked.</value>
+    <value>Login failed!
+Your account has been locked.</value>
+  </data>
+  <data name="LoginFailedExternalUser" xml:space="preserve">
+    <value>Login failed!
+External users do not have permission to use sync.</value>
   </data>
 </root>
