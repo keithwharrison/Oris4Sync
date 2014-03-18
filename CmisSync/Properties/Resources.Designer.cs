@@ -160,8 +160,8 @@ namespace CmisSync {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to connect to server!
-        ///Please check the given URL for misspelled host name.
+        ///   Looks up a localized string similar to Failed to connect to server! 
+        ///Please check the given URL for misspelled host name. 
         ///If the URL is correct, please contact your server administrator!.
         /// </summary>
         internal static string ConnectFailure {
@@ -307,7 +307,7 @@ namespace CmisSync {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A folder already in the Oris4 Sync root folder.
+        ///   Looks up a localized string similar to A local folder with the same name already exists in the Oris4 Sync root folder, please use a different name..
         /// </summary>
         internal static string FolderAlreadyExist {
             get {
@@ -408,7 +408,7 @@ namespace CmisSync {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A local folder with the same name already exist, please use a different name..
+        ///   Looks up a localized string similar to A local folder with the same name already exists, please use a different name..
         /// </summary>
         internal static string LocalDirectoryExist {
             get {
@@ -418,11 +418,20 @@ namespace CmisSync {
         
         /// <summary>
         ///   Looks up a localized string similar to Login failed!
-        ///Please check your user credentials and potentially the server URL..
+        /// Please check your user credentials and potentially the server URL..
         /// </summary>
         internal static string LoginFailedForbidden {
             get {
                 return ResourceManager.GetString("LoginFailedForbidden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Login failed! Your account has been locked..
+        /// </summary>
+        internal static string LoginFailedLocked {
+            get {
+                return ResourceManager.GetString("LoginFailedLocked", resourceCulture);
             }
         }
         
@@ -607,7 +616,7 @@ namespace CmisSync {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to communicate with the given server!
+        ///   Looks up a localized string similar to Failed to communicate with the given server! 
         ///Please check the protocol part of the given URL. Maybe your server is not capable to communicate over https.
         /// </summary>
         internal static string SendFailureHttps {

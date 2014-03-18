@@ -66,6 +66,17 @@ namespace CmisSync.Lib.Cmis
                 firstException = e;
 
             }
+            catch (CmisPermissionDeniedException e)
+            {
+                if (e.ErrorContent != null && e.ErrorContent.IndexOf("User account is locked") >= 0)
+                {
+                    firstException = new AccountLockedException(e.Message, e);
+                }
+                else
+                {
+                    firstException = new PermissionDeniedException(e.Message, e);
+                }
+            }
             catch (Exception e)
             {
                 // Save first Exception and try other possibilities.
@@ -113,7 +124,14 @@ namespace CmisSync.Lib.Cmis
                 }
                 catch (CmisPermissionDeniedException e)
                 {
-                    firstException = new PermissionDeniedException(e.Message, e);
+                    if (e.ErrorContent != null && e.ErrorContent.IndexOf("User account is locked") >= 0)
+                    {
+                        firstException = new AccountLockedException(e.Message, e);
+                    }
+                    else
+                    {
+                        firstException = new PermissionDeniedException(e.Message, e);
+                    }
                     bestUrl = fuzzyUrl;
                 }
                 catch (Exception e)

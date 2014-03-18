@@ -420,7 +420,11 @@ namespace CmisSync
                                         string warning = "";
                                         string message = result.Item2.Message;
                                         Exception e = result.Item2;
-                                        if (e is PermissionDeniedException)
+                                        if (e is AccountLockedException)
+                                        {
+                                            warning = Properties_Resources.LoginFailedLocked;
+                                        } 
+                                        else if (e is PermissionDeniedException)
                                         {
                                             warning = Properties_Resources.LoginFailedForbidden;
                                         }
@@ -627,7 +631,8 @@ namespace CmisSync
                                     FontSize = 11,
                                     Foreground = new SolidColorBrush(Color.FromRgb(255, 128, 128)),
                                     Visibility = Visibility.Hidden,
-                                    TextWrapping = TextWrapping.Wrap
+                                    TextWrapping = TextWrapping.Wrap,
+                                    Width = 420
                                 };
 
                                 Button cancel_button = new Button()
@@ -1230,7 +1235,11 @@ namespace CmisSync
                                             string warning = "";
                                             string message = result.Item2.Message;
                                             Exception e = result.Item2;
-                                            if (e is PermissionDeniedException)
+                                            if (e is AccountLockedException)
+                                            {
+                                                warning = Properties_Resources.LoginFailedLocked;
+                                            } 
+                                            else if (e is PermissionDeniedException)
                                             {
                                                 warning = Properties_Resources.LoginFailedForbidden;
                                             }

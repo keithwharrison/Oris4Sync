@@ -169,7 +169,7 @@
     <value>Finish</value>
   </data>
   <data name="FolderAlreadyExist" xml:space="preserve">
-    <value>A folder already in the Oris4 Sync root folder</value>
+    <value>A local folder with the same name already exists in the Oris4 Sync root folder, please use a different name.</value>
   </data>
   <data name="Hint" xml:space="preserve">
     <value>Hint</value>
@@ -256,7 +256,7 @@ Please ensure you typed the URL correctly. Contact support@oris4.com if the prob
     <value>Change the local path of this repository:</value>
   </data>
   <data name="LocalDirectoryExist" xml:space="preserve">
-    <value>A local folder with the same name already exist, please use a different name.</value>
+    <value>A local folder with the same name already exists, please use a different name.</value>
   </data>
   <data name="PauseSync" xml:space="preserve">
     <value>Pause sync</value>
@@ -277,16 +277,16 @@ Please ensure you typed the URL correctly. Contact support@oris4.com if the prob
     <value>View Log</value>
   </data>
   <data name="ConnectFailure" xml:space="preserve">
-    <value>Failed to connect to server!
-Please check the given URL for misspelled host name.
+    <value>Failed to connect to server! 
+Please check the given URL for misspelled host name. 
 If the URL is correct, please contact your server administrator!</value>
   </data>
   <data name="LoginFailedForbidden" xml:space="preserve">
     <value>Login failed!
-Please check your user credentials and potentially the server URL.</value>
+ Please check your user credentials and potentially the server URL.</value>
   </data>
   <data name="SendFailureHttps" xml:space="preserve">
-    <value>Failed to communicate with the given server!
+    <value>Failed to communicate with the given server! 
 Please check the protocol part of the given URL. Maybe your server is not capable to communicate over https</value>
   </data>
   <data name="DoNotIgnoreFolder" xml:space="preserve">
@@ -373,5 +373,8 @@ Please check the protocol part of the given URL. Maybe your server is not capabl
   </data>
   <data name="Outlook" xml:space="preserve">
     <value>Outlook</value>
+  </data>
+  <data name="LoginFailedLocked" xml:space="preserve">
+    <value>Login failed! Your account has been locked.</value>
   </data>
 </root>
