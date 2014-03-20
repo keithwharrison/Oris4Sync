@@ -55,9 +55,6 @@ namespace CmisSync.Lib.Cmis
             Dictionary<string, string> repositories = null;
             Exception firstException = null;
 
-            string accountLockedRegex = "User account is locked";
-            string externalUserRegex = "External Users [d|t]o not have permission to use sync";
-
             // Try the given URL, maybe user directly entered the CMIS AtomPub endpoint URL.
             try
             {
@@ -72,18 +69,7 @@ namespace CmisSync.Lib.Cmis
             }
             catch (CmisPermissionDeniedException e)
             {
-                if (e.ErrorContent != null && Regex.IsMatch(e.ErrorContent, accountLockedRegex, RegexOptions.IgnoreCase))
-                {
-                    firstException = new AccountLockedException(e.Message, e);
-                }
-                else if (e.ErrorContent != null && Regex.IsMatch(e.ErrorContent, externalUserRegex, RegexOptions.IgnoreCase))
-                {
-                    firstException = new ExternalUserException(e.Message, e);
-                }
-                else
-                {
-                    firstException = new PermissionDeniedException(e.Message, e);
-                }
+                firstException = new PermissionDeniedException(e.Message, e);
             }
             catch (Exception e)
             {
@@ -132,18 +118,7 @@ namespace CmisSync.Lib.Cmis
                 }
                 catch (CmisPermissionDeniedException e)
                 {
-                    if (e.ErrorContent != null && Regex.IsMatch(e.ErrorContent, accountLockedRegex, RegexOptions.IgnoreCase))
-                    {
-                        firstException = new AccountLockedException(e.Message, e);
-                    }
-                    else if (e.ErrorContent != null && Regex.IsMatch(e.ErrorContent, externalUserRegex, RegexOptions.IgnoreCase))
-                    {
-                        firstException = new ExternalUserException(e.Message, e);
-                    }
-                    else
-                    {
-                        firstException = new PermissionDeniedException(e.Message, e);
-                    }
+                    firstException = new PermissionDeniedException(e.Message, e);
                     bestUrl = fuzzyUrl;
                 }
                 catch (Exception e)

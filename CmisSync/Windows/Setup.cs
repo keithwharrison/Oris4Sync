@@ -420,17 +420,16 @@ namespace CmisSync
                                         string warning = "";
                                         string message = result.Item2.Message;
                                         Exception e = result.Item2;
-                                        if (e is AccountLockedException)
+                                        if (e is PermissionDeniedException)
                                         {
-                                            warning = Properties_Resources.LoginFailedLocked;
-                                        }
-                                        else if (e is ExternalUserException)
-                                        {
-                                            warning = Properties_Resources.LoginFailedExternalUser;
-                                        }
-                                        else if (e is PermissionDeniedException)
-                                        {
-                                            warning = Properties_Resources.LoginFailedForbidden;
+                                            if (e.Message == "Forbidden")
+                                            {
+                                                warning = Properties_Resources.LoginFailedForbidden;
+                                            }
+                                            else
+                                            {
+                                                warning = String.Format(Properties_Resources.LoginFailedMessage, message);
+                                            }
                                         }
                                         else if (e is ServerNotFoundException)
                                         {
@@ -1239,17 +1238,16 @@ namespace CmisSync
                                             string warning = "";
                                             string message = result.Item2.Message;
                                             Exception e = result.Item2;
-                                            if (e is AccountLockedException)
+                                            if (e is PermissionDeniedException)
                                             {
-                                                warning = Properties_Resources.LoginFailedLocked;
-                                            }
-                                            else if (e is ExternalUserException)
-                                            {
-                                                warning = Properties_Resources.LoginFailedExternalUser;
-                                            }
-                                            else if (e is PermissionDeniedException)
-                                            {
-                                                warning = Properties_Resources.LoginFailedForbidden;
+                                                if (e.Message == "Forbidden")
+                                                {
+                                                    warning = Properties_Resources.LoginFailedForbidden;
+                                                }
+                                                else
+                                                {
+                                                    warning = String.Format(Properties_Resources.LoginFailedMessage, message);
+                                                }
                                             }
                                             else if (e is ServerNotFoundException)
                                             {

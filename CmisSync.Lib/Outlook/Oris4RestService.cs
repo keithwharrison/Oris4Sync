@@ -1,3 +1,4 @@
+using CmisSync.Lib.Cmis;
 using log4net;
 using RestSharp;
 using System;
@@ -229,18 +230,18 @@ namespace CmisSync.Lib.Outlook
                 case (int)HttpStatusCode.Unauthorized:
                 case (int)HttpStatusCode.Forbidden:
                 case (int)HttpStatusCode.NotFound:
-                    throw new CmisSync.Lib.Cmis.PermissionDeniedException("Authentication Failed.");
+                    throw new PermissionDeniedException("Authentication Failed.");
 
                 case 420:
-                    throw new CmisSync.Lib.Cmis.ServerBusyException("Server was busy, try again later.");
+                    throw new ServerBusyException("Server was busy, try again later.");
 
                 case 423:
-                    throw new CmisSync.Lib.Cmis.AccountLockedException("User account is locked.");
+                    throw new AccountLockedException("User account is locked.");
 
                 case (int)HttpStatusCode.BadRequest:
                 case (int)HttpStatusCode.InternalServerError:
                 default:
-                    throw new CmisSync.Lib.Cmis.BaseException(String.Format("Error: {0} {1}", restResponse.StatusDescription, restResponse.ResponseStatus));
+                    throw new BaseException(String.Format("Error: {0} {1}", restResponse.StatusDescription, restResponse.ResponseStatus));
             }
 
         }

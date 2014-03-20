@@ -101,7 +101,7 @@ namespace CmisSync.Lib.Sync
             /// <summary>
             /// Set for first sync.
             /// </summary>
-            private bool firstSync = false;
+            private bool firstSync = true;
 
             /// <summary>
             /// Background worker for sync.
@@ -317,7 +317,6 @@ namespace CmisSync.Lib.Sync
                     if (session == null)
                     {
                         Connect();
-                        firstSync = true;
                     }
 
                     IFolder remoteFolder = (IFolder)session.GetObjectByPath(remoteFolderPath);
@@ -365,6 +364,7 @@ namespace CmisSync.Lib.Sync
                     try
                     {
                         repo.OnSyncComplete(syncFull);
+                        session = null; //forget session information between syncs
                     }
                     finally
                     {
