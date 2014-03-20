@@ -135,18 +135,6 @@ namespace CmisSync
 
 
         /// <summary>
-        /// Whether it is the first time that CmisSync is being run.
-        /// </summary>
-        public bool FirstRun
-        {
-            get
-            {
-                return firstRun;
-            }
-        }
-
-
-        /// <summary>
         /// The list of synchronized folders.
         /// </summary>
         public List<string> Folders
@@ -257,7 +245,6 @@ namespace CmisSync
             if (firstRun)
             {
                 ShowSetupWindow(PageType.Setup);
-
             }
             else
             {
@@ -265,8 +252,10 @@ namespace CmisSync
                 {
                     CheckRepositories();
                     RepositoriesLoaded = true;
-                    FolderListChanged();
-
+                    if (repositories.Count < 1)
+                    {
+                        ShowSetupWindow(PageType.Add1);
+                    }
                 }).Start();
             }
         }
@@ -343,15 +332,11 @@ namespace CmisSync
         private void RemoveRepository(Config.SyncConfig.Folder folder)
         {
             RepoBase repository = null;
-            string databasePath = null;
-            string outlookDatabasePath = null;
             foreach (RepoBase repo in repositories)
             {
                 if (repo.LocalPath.Equals(folder.LocalPath))
                 {
                     repository = repo;
-                    databasePath = repository.RepoInfo.CmisDatabase;
-                    outlookDatabasePath = CmisSync.Lib.Outlook.OutlookSync.GetOutlookDatabasePath(databasePath);
                 }
             }
 
@@ -364,6 +349,9 @@ namespace CmisSync
                 Logger.Info("Removed Repository: " + folder.DisplayName);
             }
 
+            string databasePath = RepoInfo.GetCmisDatabasePath(ConfigManager.CurrentConfig.ConfigPath, folder.DisplayName);
+            string outlookDatabasePath = CmisSync.Lib.Outlook.OutlookSync.GetOutlookDatabasePath(databasePath);
+            
             RemoveDatabase(databasePath);
             RemoveDatabase(outlookDatabasePath);
         }
@@ -428,10 +416,8 @@ namespace CmisSync
                     if (!Directory.Exists(folder_path))
                     {
                         RemoveRepository(f);
+                        Logger.InfoFormat("Removed folder '{0}' from config", f.LocalPath);
                         toBeDeleted.Add(f);
-
-                        Logger.Info("Controller | Removed folder '" + folder_name + "' from config");
-
                     }
                     else
                     {
@@ -439,11 +425,16 @@ namespace CmisSync
                     }
                 }
 
-                foreach(Config.SyncConfig.Folder f in toBeDeleted){
+                foreach(Config.SyncConfig.Folder f in toBeDeleted)
+                {
                     ConfigManager.CurrentConfig.Folder.Remove(f);
                 }
-                if(toBeDeleted.Count>0)
+
+                if (toBeDeleted.Count > 0)
+                {
                     ConfigManager.CurrentConfig.Save();
+                }
+
                 // Update UI.
                 FolderListChanged();
             }

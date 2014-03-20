@@ -41,16 +41,6 @@ namespace CmisSync
 
 
         /// <summary>
-        /// Initialize the controller
-        /// </summary>
-        /// <param name="firstRun">Whether it is the first time that CmisSync is being run.</param>
-        public override void Initialize(Boolean firstRun)
-        {
-            base.Initialize(firstRun);
-        }
-
-
-        /// <summary>
         /// Add CmisSync to the list of programs to be started up when the user logs into Windows.
         /// </summary>
         public override void CreateStartupItem()

@@ -119,7 +119,7 @@ namespace CmisSync.Lib
         /// <summary>
         /// Get the cmis database path.
         /// </summary>
-        private string GetCmisDatabasePath(string cmisDatabaseFolder, string repoName)
+        public static string GetCmisDatabasePath(string cmisDatabaseFolder, string repoName)
         {
             return Path.Combine(cmisDatabaseFolder, repoName.Replace("\\", "_").Replace("/", "_") + ".cmissync");
         }
