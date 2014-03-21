@@ -6,6 +6,19 @@
 		<language>en</language>
 
 		<item>
+			<title>Version 3.1.6.0</title>
+			<description><![CDATA[
+				<div style="font-family: 'Lucida Grande', Arial, sans-serif; font-size: 9pt; padding: 3px;"> 	<h1 style="font-size: 9pt; background-color: #e6edff; border: dotted 1px #ccc; margin: 0; padding: 3px;"> 		New in Release 3.1.6.0 	</h1> 	<div style="border: dotted 1px #ccc; border-width: 0 1px 1px 1px; padding: 3px; margin: 0 0 12px 0;"> 		<ul> 			<li>Performance enhancements and bug fixes.</li> 		</ul> 	</div> </div> 
+			]]></description>
+ 			<pubDate>Fri, 21 Mar 2014 09:28:25 GMT</pubDate>
+			<enclosure url="http://update.oris4.com/debug/Oris4Sync.3.1.6.0.exe"
+				sparkle:version="3.1.6.0"
+				length="4008064"
+				type="application/octet-stream"
+				sparkle:dsaSignature="plB6y3IatKB09scvW0EhEwid5Ma/e/A5DFsxeUm7j4JQkeHN+q8VRw=="/>
+		</item>
+
+		<item>
 			<title>Version 3.1.5.0</title>
 			<description><![CDATA[
 				<div style="font-family: 'Lucida Grande', Arial, sans-serif; font-size: 9pt; padding: 3px;"> 	<h1 style="font-size: 9pt; background-color: #e6edff; border: dotted 1px #ccc; margin: 0; padding: 3px;"> 		New in Release 3.1.5.0 	</h1> 	<div style="border: dotted 1px #ccc; border-width: 0 1px 1px 1px; padding: 3px; margin: 0 0 12px 0;"> 		<ul> 			<li>Installer and executables are now code signed.</li> 		</ul> 	</div> </div> 
@@ -15,7 +28,7 @@
 				sparkle:version="3.1.5.0"
 				length="3633040"
 				type="application/octet-stream"
-				sparkle:dsaSignature="RX4pDULYMbpyef923wEvZG6KVdq4rAnYsbLxvBy1B9A3DaaGRmx4UA=="/>
+				sparkle:dsaSignature="C5ayNcEjcUPU23hSrA4MOmeWA41rA/MH5eKDVO0rEPHoGb9xdPLHvw=="/>
 		</item>
 
 		<item>
@@ -28,7 +41,7 @@
 				sparkle:version="3.1.4.0"
 				length="3976237"
 				type="application/octet-stream"
-				sparkle:dsaSignature="g2/uTOj00re9XGqYmr86NOwYTOmny2FHAs9cBpbgU/axXjqcqG5s0g=="/>
+				sparkle:dsaSignature="XiTRkynOGBVAeil5nV0T/XoMfVlJ2OkKl/a4Uth6FQWDXK19EJkcaw=="/>
 		</item>
 
 		<item>
@@ -41,7 +54,7 @@
 				sparkle:version="3.1.3.0"
 				length="3976021"
 				type="application/octet-stream"
-				sparkle:dsaSignature="0gd7NoS6vKCsFW9VTyB8/9lENi695kJNSwvmwc4insyi79BkraB+wA=="/>
+				sparkle:dsaSignature="XY5AO0SSwwpSy2pQamQjVPfP5Dyq06ORAPh9RgmwQFZKn3QdTkWghA=="/>
 		</item>
 
 	</channel>
