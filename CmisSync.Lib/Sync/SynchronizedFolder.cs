@@ -502,10 +502,11 @@ namespace CmisSync.Lib.Sync
 
                 if (recoverable)
                 {
-                    Logger.Error(logMessage, exception);
+                    Logger.Warn(logMessage, exception);
                 }
                 else
                 {
+                    Logger.Error(logMessage, exception);
                     throw exception;
                 }
             }

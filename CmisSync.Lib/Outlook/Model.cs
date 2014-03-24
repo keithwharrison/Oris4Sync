@@ -9,18 +9,18 @@ namespace CmisSync.Lib.Outlook
     {
         public string messageID { get; set; }
         public string references { get; set; }
-        public DateTime receivedDate { get; set; }
-        public DateTime sentDate { get; set; }
+        public long receivedDate { get; set; }
+        public long sentDate { get; set; }
         public bool attachmentOnly { get; set; }
         public string subject { get; set; }
         public string body { get; set; }
-        public DateTime dateCreated { get; set; }
+        public long dateCreated { get; set; }
         public string dataHash { get; set; }
         public string folderPath { get; set; }
         public string inReplyTo { get; set; }
         public List<EmailContact> emailContacts { get; set; }
         public List<EmailAttachment> attachments { get; set; }
-        public DateTime lastModified { get; set; }
+        public long lastModified { get; set; }
         public long key { get; set; }
         [JsonIgnore]
         public string entryID { get; set; }
@@ -78,5 +78,20 @@ namespace CmisSync.Lib.Outlook
         public string folderPath { get; set; }
         private List<OutlookFolder> _children = new List<OutlookFolder>();
         public List<OutlookFolder> children { get { return _children; } }
+    }
+
+    public class Oris4Folder
+    {
+        public string name { get; set; }
+        public long ownerKey { get; set; }
+        public string ownerName { get; set; }
+        public long key { get; set; }
+        public long parentKey { get; set; }
+        public string integrationId { get; set; }
+        public bool editable { get; set; }
+        public bool hasChildren { get; set; }
+        public bool hasCurrentUserEditorAccess { get; set; }
+        public List<long> path { get; set; }
+        public string serviceFolderPath { get; set; }
     }
 }

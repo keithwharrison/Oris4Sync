@@ -38,7 +38,7 @@ namespace CmisSync.Lib.Outlook
             }
         }
 
-        public Email getEmail(int emailKey, bool linkedEntities, int offset, int pageSize)
+        public Email getEmail(long emailKey, bool linkedEntities, int offset, int pageSize)
         {
             if (oAuth == null)
             {
@@ -63,7 +63,7 @@ namespace CmisSync.Lib.Outlook
             Oris4RestService.deleteEmail(client, registeredClient, emailAddress, emailHash);
         }
 
-        public List<Email> listEmail(int folderKey, int offset, int pageSize)
+        public List<Email> listEmail(long folderKey, int offset, int pageSize)
         {
             if (oAuth == null)
             {
@@ -138,6 +138,37 @@ namespace CmisSync.Lib.Outlook
             }
 
             return Oris4RestService.insertAttachment(client, registeredClient, emailAddress, emailAttachment, data);
+        }
+
+        public Oris4Folder getRootOutlookFolder()
+        {
+            if (oAuth == null)
+            {
+                throw new PermissionDeniedException("You must login before performing this action");
+            }
+
+            List<Oris4Folder> rootFolderList = Oris4RestService.listRootFolders(client);
+
+            Oris4Folder rootOutlookFolder = null;
+            foreach (Oris4Folder folder in rootFolderList)
+            {
+                if ("emailingestion".Equals(folder.integrationId))
+                {
+                    rootOutlookFolder = folder;
+                }
+            }
+
+            return rootOutlookFolder;
+        }
+
+        public List<Oris4Folder> listSubFolders(long folderKey)
+        {
+            if (oAuth == null)
+            {
+                throw new PermissionDeniedException("You must login before performing this action");
+            }
+
+            return Oris4RestService.listSubFolders(client, folderKey);
         }
     }
 }

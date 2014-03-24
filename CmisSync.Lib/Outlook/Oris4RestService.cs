@@ -21,6 +21,8 @@ namespace CmisSync.Lib.Outlook
         private static readonly string URI_EMAIL_POST = "webServices/rest/v3/email/";
         private static readonly string URI_EMAIL_BATCH_POST = "webServices/rest/v3/email/batch";
         private static readonly string URI_EMAIL_ATTACHMENT_POST = "webServices/rest/v3/email/attachment";
+        private static readonly string URI_FOLDER_ROOT_GET = "webServices/rest/v3/folder/root";
+        private static readonly string URI_FOLDER_SUBFOLDERS_GET = "webServices/rest/v3/folder/subfolders/{folderKey}";
 
         private static readonly string CLIENT_TYPE_OUTLOOK = "outlook";
 
@@ -52,7 +54,7 @@ namespace CmisSync.Lib.Outlook
             return response.Data;
         }
 
-        public static Email getEmail(RestClient client, int emailKey, bool linkedEntities, int offset, int pageSize)
+        public static Email getEmail(RestClient client, long emailKey, bool linkedEntities, int offset, int pageSize)
         {
             IRestRequest request = getRestRequest(URI_EMAIL_GET, Method.GET);
             request.AddUrlSegment("key", emailKey.ToString());
@@ -84,7 +86,7 @@ namespace CmisSync.Lib.Outlook
             checkResponseStatus(response, HttpStatusCode.NoContent);
         }
 
-        public static List<Email> listEmail(RestClient client, int folderKey, int offset, int pageSize)
+        public static List<Email> listEmail(RestClient client, long folderKey, int offset, int pageSize)
         {
             IRestRequest request = getRestRequest(URI_EMAIL_LIST_GET, Method.GET);
 
@@ -202,6 +204,34 @@ namespace CmisSync.Lib.Outlook
             }
 
             return response.Content;
+        }
+
+        public static List<Oris4Folder> listRootFolders(RestClient client)
+        {
+            IRestRequest request = getRestRequest(URI_FOLDER_ROOT_GET, Method.GET);
+
+            request.AddParameter("withSubFolders", true);
+
+            Logger.DebugFormat("Request: {0} {1}", request.Method, request.Resource);
+            IRestResponse<List<Oris4Folder>> response = client.Execute<List<Oris4Folder>>(request);
+
+            checkResponseStatus(response);
+
+            return response.Data;
+        }
+
+        public static List<Oris4Folder> listSubFolders(RestClient client, long folderKey)
+        {
+            IRestRequest request = getRestRequest(URI_FOLDER_SUBFOLDERS_GET, Method.GET);
+
+            request.AddUrlSegment("folderKey", folderKey.ToString());
+
+            Logger.DebugFormat("Request: {0} {1}", request.Method, request.Resource);
+            IRestResponse<List<Oris4Folder>> response = client.Execute<List<Oris4Folder>>(request);
+
+            checkResponseStatus(response);
+
+            return response.Data;
         }
 
         private static void checkResponseStatus(IRestResponse restResponse)

@@ -185,8 +185,8 @@ namespace CmisSync.Lib.Outlook
             Email email = new Email()
             {
                 messageID = getMessageId(securityManager, mailItem),
-                receivedDate = mailItem.ReceivedTime,
-                sentDate = mailItem.SentOn,
+                receivedDate = toJavaDate(mailItem.ReceivedTime),
+                sentDate = toJavaDate(mailItem.SentOn),
                 subject = mailItem.Subject,
                 folderPath = folderPath,
                 inReplyTo = getInReplyTo(securityManager, mailItem),
@@ -419,6 +419,11 @@ namespace CmisSync.Lib.Outlook
             return (long)(date.ToUniversalTime() - new DateTime(1970, 1, 1)).TotalMilliseconds;
         }
 
+        private static DateTime fromJavaDate(long date)
+        {
+            return new DateTime(1970, 1, 1).AddMilliseconds(date);
+        }
+        
         public static string createEmailDataHash(Email email)
         {
             string dataToHash = createEmailHashString(email);
@@ -429,7 +434,7 @@ namespace CmisSync.Lib.Outlook
 
         private static string createEmailHashString(Email email)
         {
-            long sentDate = toJavaDate(email.sentDate);
+            long sentDate = email.sentDate;
             string messageId = email.messageID;
 
             string sender = null;

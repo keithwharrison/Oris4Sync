@@ -245,6 +245,7 @@ namespace CmisSync.Lib.Outlook
                 Logger.InfoFormat("Registering a new Outlook client ID: {0}", clientId);
                 outlookDatabase.RemoveAllEmails();
                 outlookDatabase.SetClientId(clientId);
+                DeleteRemoteEmails(restSession);
                 restSession.putRegisteredClient(clientId);
             }
         }
@@ -261,6 +262,95 @@ namespace CmisSync.Lib.Outlook
             return true;
         }
 
+        private void DeleteRemoteEmails(Oris4RestSession restSession)
+        {
+            SleepWhileSuspended();
+
+            try
+            {
+
+                Oris4Folder outlookFolder = restSession.getRootOutlookFolder();
+                if (outlookFolder != null)
+                {
+                    Logger.DebugFormat("Root Folder: {0}, {1}, {2}", outlookFolder.name, outlookFolder.ownerName, outlookFolder.key);
+
+                    List<Oris4Folder> folderList = restSession.listSubFolders(outlookFolder.key);
+                    DeleteRemoteEmails(restSession, folderList);
+                }
+            }
+            catch (System.Exception e)
+            {
+                ProcessRecoverableException("Problem while getting outlook root folder", e);
+            }
+        }
+
+        private void DeleteRemoteEmails(Oris4RestSession restSession, List<Oris4Folder> folderList)
+        {
+            SleepWhileSuspended();
+
+            if (folderList != null && folderList.Count > 0)
+            {
+                foreach (Oris4Folder folder in folderList)
+                {
+                    DeleteRemoteEmails(restSession, folder);
+                }
+            }
+        }
+
+        private void DeleteRemoteEmails(Oris4RestSession restSession, Oris4Folder folder)
+        {
+            SleepWhileSuspended();
+
+            try
+            {
+                if ( folder != null && !string.IsNullOrWhiteSpace(folder.serviceFolderPath))
+                {
+                    Logger.DebugFormat("Folder: {0}, {1}, {2}", folder.name, folder.ownerName, folder.key);
+
+                    int offset = 0;
+                    List<Email> emailList = new List<Email>();
+                    do
+                    {
+                        emailList = restSession.listEmail(folder.key, offset, EMAIL_BATCH_SIZE);
+                        foreach (Email email in emailList)
+                        {
+                            DeleteRemoteEmail(restSession, email.key);
+                        }
+
+                        offset += EMAIL_BATCH_SIZE;
+                    } while (emailList.Count > 0);
+
+                    List<Oris4Folder> subFolders = restSession.listSubFolders(folder.key);
+                    DeleteRemoteEmails(restSession, subFolders);
+                }
+            }
+            catch (System.Exception e)
+            {
+                ProcessRecoverableException(string.Format("Problem while traversing remote email folder: {0}", folder), e);
+            }
+        }
+
+        private void DeleteRemoteEmail(Oris4RestSession restSession, long emailKey)
+        {
+            SleepWhileSuspended();
+
+            try
+            {
+                Logger.DebugFormat("Email: {0}", emailKey);
+
+                Email email = restSession.getEmail(emailKey, false, 0, 1);
+                if (email != null)
+                {
+                    restSession.deleteEmail(email.dataHash);
+                    Logger.InfoFormat("Deleted remote email: {0}", emailKey);
+                }
+            }
+            catch (System.Exception e)
+            {
+                ProcessRecoverableException(string.Format("Problem while deleting email: {0}", emailKey), e);
+            }
+        }
+        
         private void UploadEmails(Oris4RestSession restSession, List<Email> emails)
         {
             SleepWhileSuspended();
