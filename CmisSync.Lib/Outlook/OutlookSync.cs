@@ -15,6 +15,7 @@ namespace CmisSync.Lib.Outlook
         private static readonly ILog Logger = LogManager.GetLogger(typeof(OutlookSync));
 
         private static readonly int EMAIL_BATCH_SIZE = 50;
+        private static readonly int EMAIL_LIST_SIZE = 25;
 
         /// <summary>
         /// Track whether <c>Dispose</c> has been called.
@@ -307,19 +308,32 @@ namespace CmisSync.Lib.Outlook
                 {
                     Logger.DebugFormat("Folder: {0}, {1}, {2}", folder.name, folder.ownerName, folder.key);
 
+                    HashSet<string> emailDataHashSet = new HashSet<string>();
                     int offset = 0;
                     List<Email> emailList = new List<Email>();
                     do
                     {
-                        emailList = restSession.listEmail(folder.key, offset, EMAIL_BATCH_SIZE);
+                        emailList = restSession.listEmail(folder.key, offset, EMAIL_LIST_SIZE);
+                        Logger.DebugFormat("List emails for folder: key={0}, offset={1}, pageSize={2}, count={3}", folder.key, offset, EMAIL_LIST_SIZE, emailList.Count);
+
                         foreach (Email email in emailList)
                         {
-                            DeleteRemoteEmail(restSession, email.key);
+                            string dataHash = GetRemoteEmailDataHash(restSession, email.key);
+                            if (!string.IsNullOrWhiteSpace(dataHash) && !emailDataHashSet.Contains(dataHash))
+                            {
+                                emailDataHashSet.Add(dataHash);
+                            }
                         }
 
-                        offset += EMAIL_BATCH_SIZE;
+                        offset += EMAIL_LIST_SIZE;
                     } while (emailList.Count > 0);
 
+                    if (emailDataHashSet.Count > 0)
+                    {
+                        DeleteEmails(restSession, emailDataHashSet);
+                    }
+
+                    //Recurse into subfolders...
                     List<Oris4Folder> subFolders = restSession.listSubFolders(folder.key);
                     DeleteRemoteEmails(restSession, subFolders);
                 }
@@ -330,7 +344,7 @@ namespace CmisSync.Lib.Outlook
             }
         }
 
-        private void DeleteRemoteEmail(Oris4RestSession restSession, long emailKey)
+        private string GetRemoteEmailDataHash(Oris4RestSession restSession, long emailKey)
         {
             SleepWhileSuspended();
 
@@ -339,15 +353,12 @@ namespace CmisSync.Lib.Outlook
                 Logger.DebugFormat("Email: {0}", emailKey);
 
                 Email email = restSession.getEmail(emailKey, false, 0, 1);
-                if (email != null)
-                {
-                    restSession.deleteEmail(email.dataHash);
-                    Logger.InfoFormat("Deleted remote email: {0}", emailKey);
-                }
+                return email != null ? email.dataHash : null;
             }
             catch (System.Exception e)
             {
                 ProcessRecoverableException(string.Format("Problem while deleting email: {0}", emailKey), e);
+                return null;
             }
         }
         
@@ -439,11 +450,21 @@ namespace CmisSync.Lib.Outlook
         }
 
 
-        private void DeleteEmails(Oris4RestSession restSession, string folderPath, List<string> emailsToDelete)
+        private void DeleteEmails(Oris4RestSession restSession, HashSet<string> emailDataHashSet)
         {
             SleepWhileSuspended();
 
-            foreach (string entryId in emailsToDelete)
+            foreach (string dataHash in emailDataHashSet)
+            {
+                DeleteEmail(restSession, dataHash);
+            }
+        }
+        
+        private void DeleteEmails(Oris4RestSession restSession, string folderPath, List<string> emailEntryIdList)
+        {
+            SleepWhileSuspended();
+
+            foreach (string entryId in emailEntryIdList)
             {
                 DeleteEmail(restSession, folderPath, entryId);
             }
@@ -462,8 +483,7 @@ namespace CmisSync.Lib.Outlook
                     return;
                 }
 
-                Logger.InfoFormat("Deleting email from server: {0}", dataHash);
-                restSession.deleteEmail(dataHash);
+                DeleteEmail(restSession, dataHash);
 
                 outlookDatabase.RemoveEmail(folderPath, entryId);
                 Logger.InfoFormat("Deleted email from database: {0}\\{1}", folderPath, entryId);
@@ -471,6 +491,21 @@ namespace CmisSync.Lib.Outlook
             catch (System.Exception e)
             {
                 ProcessRecoverableException(string.Format("Could not delete email: {0}\\{1}", folderPath, entryId), e);
+            }
+        }
+
+        private void DeleteEmail(Oris4RestSession restSession, string dataHash)
+        {
+            SleepWhileSuspended();
+
+            try
+            {
+                Logger.InfoFormat("Deleting email from server: {0}", dataHash);
+                restSession.deleteEmail(dataHash);
+            }
+            catch (System.Exception e)
+            {
+                ProcessRecoverableException(string.Format("Could not delete email: {0}", dataHash), e);
             }
         }
 
