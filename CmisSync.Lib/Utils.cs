@@ -74,7 +74,7 @@ namespace CmisSync.Lib
         /// <summary>
         /// Names of files that must be excluded from synchronization.
         /// </summary>
-        private static HashSet<String> ignoredFilenames = new HashSet<String>{
+        private static readonly HashSet<String> ignoredFilenames = new HashSet<String>{
             "~", // gedit and emacs
             "thumbs.db", "desktop.ini", // Windows
             "cvs", ".svn", ".git", ".hg", ".bzr", // Version control local settings
@@ -88,7 +88,7 @@ namespace CmisSync.Lib
         /// <summary>
         /// A regular expression to detemine ignored filenames.
         /// </summary>
-        private static Regex ignoredFilenamesRegex = new Regex(
+        private static readonly Regex ignoredFilenamesRegex = new Regex(
             "(" + "^~" + // Microsoft Office temporary files start with ~
             "|" + "^\\._" + // Mac OS X files starting with ._
             "|" + "~$" + // gedit and emacs
@@ -102,7 +102,7 @@ namespace CmisSync.Lib
         /// <summary>
         /// Extensions of files that must be excluded from synchronization.
         /// </summary>
-        private static HashSet<String> ignoredExtensions = new HashSet<String>{
+        private static readonly HashSet<String> ignoredExtensions = new HashSet<String>{
             ".autosave", // Various autosaving apps
             ".~lock", // LibreOffice
             ".part", ".crdownload", // Firefox and Chromium temporary download files
@@ -272,7 +272,7 @@ namespace CmisSync.Lib
         /// <summary>
         /// Regular expression to check whether a file name is valid or not.
         /// </summary>
-        private static Regex invalidFileNameRegex = new Regex(
+        private static readonly Regex invalidFileNameRegex = new Regex(
             "[" + Regex.Escape(new string(Path.GetInvalidFileNameChars())) + "]");
 
 
@@ -293,7 +293,7 @@ namespace CmisSync.Lib
         /// <summary>
         /// Regular expression to check whether a filename is valid or not.
         /// </summary>
-        private static Regex invalidFolderNameRegex = new Regex(
+        private static readonly Regex invalidFolderNameRegex = new Regex(
             "[" + Regex.Escape(new string(Path.GetInvalidPathChars())) + "]");
 
         /// <summary>
@@ -459,19 +459,16 @@ namespace CmisSync.Lib
         }
 
         /// <summary>
+        /// A regular expression to detemine ignored filenames.
+        /// </summary>
+        private static readonly Regex validEmailRegex = new Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.(?:[a-zA-Z]{2,6})$");
+
+        /// <summary>
         /// Determine if email address is valid.
         /// </summary>
         public static bool IsValidEmail(string emailAddress)
         {
-            try
-            {
-                MailAddress address = new MailAddress(emailAddress);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            return validEmailRegex.IsMatch(emailAddress);
         }
     }
 }
