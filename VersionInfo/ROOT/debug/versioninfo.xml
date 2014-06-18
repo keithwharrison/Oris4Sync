@@ -6,6 +6,19 @@
 		<language>en</language>
 
 		<item>
+			<title>Version 3.1.9.0</title>
+			<description><![CDATA[
+				<div style="font-family: 'Lucida Grande', Arial, sans-serif; font-size: 9pt; padding: 3px;"> 	<h1 style="font-size: 9pt; background-color: #e6edff; border: dotted 1px #ccc; margin: 0; padding: 3px;"> 		New in Release 3.1.9.0 	</h1> 	<div style="border: dotted 1px #ccc; border-width: 0 1px 1px 1px; padding: 3px; margin: 0 0 12px 0;"> 		<ul> 			<li>Performance enhancements and bug fixes.</li> 		</ul> 	</div> </div> 
+			]]></description>
+ 			<pubDate>Wed, 18 Jun 2014 14:56:58 GMT</pubDate>
+			<enclosure url="http://update.oris4.com/debug/Oris4Sync.3.1.9.0.exe"
+				sparkle:version="3.1.9.0"
+				length="4010896"
+				type="application/octet-stream"
+				sparkle:dsaSignature="omvghzrw69PU7B2s3+2PtNxJktRmU54nJtxwo5S09DQbX4/r6Y54ow=="/>
+		</item>
+
+		<item>
 			<title>Version 3.1.8.0</title>
 			<description><![CDATA[
 				<div style="font-family: 'Lucida Grande', Arial, sans-serif; font-size: 9pt; padding: 3px;"> 	<h1 style="font-size: 9pt; background-color: #e6edff; border: dotted 1px #ccc; margin: 0; padding: 3px;"> 		New in Release 3.1.8.0 	</h1> 	<div style="border: dotted 1px #ccc; border-width: 0 1px 1px 1px; padding: 3px; margin: 0 0 12px 0;"> 		<ul> 			<li>Performance enhancements and bug fixes.</li> 		</ul> 	</div> </div> 
@@ -15,7 +28,7 @@
 				sparkle:version="3.1.8.0"
 				length="4010616"
 				type="application/octet-stream"
-				sparkle:dsaSignature="ZBHPtDBRp4W+NflTQCqyqV2bQhBzuaQJXzuIKuTejtY8mgVdDc97hw=="/>
+				sparkle:dsaSignature="M8q9r25kfcAlcVWpnOYEhw90sHYEkBevxqU/heXSnYGnEfk4mMpsug=="/>
 		</item>
 
 		<item>
@@ -28,7 +41,7 @@
 				sparkle:version="3.1.7.0"
 				length="4010616"
 				type="application/octet-stream"
-				sparkle:dsaSignature="OtMCxD126WSP1VxNfvdNejAhdxndq2cGN7Ej0EcHSaB6QLagtXgqAQ=="/>
+				sparkle:dsaSignature="qg+BxxGNT/wz4D6DQfyglz/5t4JfTh4jNgwNszaql7uqOZZuPV2ISQ=="/>
 		</item>
 
 		<item>
@@ -41,7 +54,7 @@
 				sparkle:version="3.1.6.0"
 				length="4008064"
 				type="application/octet-stream"
-				sparkle:dsaSignature="eLAjVI2H0Ytbmi+AopvZThoE8jTJNK23JOh+JlsdIYXHIS0gm5hd6g=="/>
+				sparkle:dsaSignature="Ckq16qSOPEHS6GzgXYyfiPlDMZoxEnj1+RoYjzQ0VaPzO1cuMmD8sw=="/>
 		</item>
 
 		<item>
@@ -54,7 +67,7 @@
 				sparkle:version="3.1.5.0"
 				length="3633040"
 				type="application/octet-stream"
-				sparkle:dsaSignature="PuyoRSCq98xzupz/7nyLMKgD0U07+O6rSeB4fZqR1rjCYEcHFzt3tg=="/>
+				sparkle:dsaSignature="mwBPHAKFUc3oB8xreWOsTd7cDm9JTOJFriVUgN1S+OlIqI8VXJlmjQ=="/>
 		</item>
 
 		<item>
@@ -67,7 +80,7 @@
 				sparkle:version="3.1.4.0"
 				length="3976237"
 				type="application/octet-stream"
-				sparkle:dsaSignature="MRc+n6dHSrc16m1Wgd2A/+zs5TilHGHawVVA8frb246e0Sd01qVq+w=="/>
+				sparkle:dsaSignature="BKP98JDmz2ER7Ur/NmHrpNcD/MeKYlwOjCQmg0U4XbgKX94a5DTRgg=="/>
 		</item>
 
 		<item>
@@ -80,7 +93,7 @@
 				sparkle:version="3.1.3.0"
 				length="3976021"
 				type="application/octet-stream"
-				sparkle:dsaSignature="P17gmpkToHzgUX0Zfho3qCshm4AmP8phSVl10xKWt7fjV0OofMrj7g=="/>
+				sparkle:dsaSignature="DqBRSsnZM/d0FT8cBO4v8sbFB9Tgxr7ahk2uKzzm9bzICfDIIsxjCQ=="/>
 		</item>
 
 	</channel>

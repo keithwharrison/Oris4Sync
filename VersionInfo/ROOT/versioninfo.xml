@@ -6,16 +6,16 @@
 		<language>en</language>
 
 		<item>
-			<title>Version 3.1.8.0</title>
+			<title>Version 3.1.9.0</title>
 			<description><![CDATA[
-				<div style="font-family: 'Lucida Grande', Arial, sans-serif; font-size: 9pt; padding: 3px;"> 	<h1 style="font-size: 9pt; background-color: #e6edff; border: dotted 1px #ccc; margin: 0; padding: 3px;"> 		New in Release 3.1.8.0 	</h1> 	<div style="border: dotted 1px #ccc; border-width: 0 1px 1px 1px; padding: 3px; margin: 0 0 12px 0;"> 		<ul> 			<li>Performance enhancements and bug fixes.</li> 		</ul> 	</div> </div> 
+				<div style="font-family: 'Lucida Grande', Arial, sans-serif; font-size: 9pt; padding: 3px;"> 	<h1 style="font-size: 9pt; background-color: #e6edff; border: dotted 1px #ccc; margin: 0; padding: 3px;"> 		New in Release 3.1.9.0 	</h1> 	<div style="border: dotted 1px #ccc; border-width: 0 1px 1px 1px; padding: 3px; margin: 0 0 12px 0;"> 		<ul> 			<li>Performance enhancements and bug fixes.</li> 		</ul> 	</div> </div> 
 			]]></description>
- 			<pubDate>Tue, 06 May 2014 14:29:15 GMT</pubDate>
-			<enclosure url="http://update.oris4.com/Oris4Sync.3.1.8.0.exe"
-				sparkle:version="3.1.8.0"
-				length="3970680"
+ 			<pubDate>Wed, 18 Jun 2014 14:57:35 GMT</pubDate>
+			<enclosure url="http://update.oris4.com/Oris4Sync.3.1.9.0.exe"
+				sparkle:version="3.1.9.0"
+				length="3971536"
 				type="application/octet-stream"
-				sparkle:dsaSignature="chTrxxnztV2tS21Fnf5rWNxQHsvQGVaw53abI3tKcl8rXvZZngQ1ZA=="/>
+				sparkle:dsaSignature="D6ROOivWVPOIqL0nlQuSWOoBTLPTEyUezgzaE5RkYRfPSyPJyLcLMw=="/>
 		</item>
 
 		<item>
@@ -28,7 +28,7 @@
 				sparkle:version="3.1.1.0"
 				length="3658384"
 				type="application/octet-stream"
-				sparkle:dsaSignature="pXBGZJhCGtCTaqQNEceb2iqUo9RP6XexjvRBR0f2A+XRD6ZEi8MKfw=="/>
+				sparkle:dsaSignature="OomRahJA3Fnb5Tlqq3EyeXm4+ww5rKr+rP1k2zH2abqdcgsxS1xEMQ=="/>
 		</item>
 
 		<item>
@@ -41,7 +41,7 @@
 				sparkle:version="3.0.2.0"
 				length="2541803"
 				type="application/octet-stream"
-				sparkle:dsaSignature="Sz7GFhIvfMTdmVoqQkTPstlivzwg7+nQIwSHHIYxHOC/JNgL/xpRPg=="/>
+				sparkle:dsaSignature="FiuZKa1ak9BV+H+tPog2PlQbrNmfme8WQhQjYmUkZCjcMpMmFVD5Jg=="/>
 		</item>
 
 	</channel>
