@@ -262,6 +262,9 @@ namespace CmisSync.Lib.Outlook
                 case (int)HttpStatusCode.NotFound:
                     throw new PermissionDeniedException("Authentication Failed.");
 
+                case (int)HttpStatusCode.Conflict:
+                    throw new ConflictException("Conflict on server.");
+
                 case 420:
                     throw new ServerBusyException("Server was busy, try again later.");
 

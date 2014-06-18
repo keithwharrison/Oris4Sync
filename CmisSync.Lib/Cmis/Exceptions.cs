@@ -195,4 +195,38 @@ namespace CmisSync.Lib.Cmis
         /// </summary>
         protected ServerBusyException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
+
+    /// <summary>
+    /// Exception thrown when there is a conflict on the server.
+    /// </summary>
+    [Serializable]
+    public class ConflictException : BaseException
+    {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public ConflictException() { }
+
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public ConflictException(string message) : base(message) { }
+
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public ConflictException(string message, Exception inner) : base(message, inner) { }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public ConflictException(Exception inner) : base(inner) { }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        protected ConflictException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
 }

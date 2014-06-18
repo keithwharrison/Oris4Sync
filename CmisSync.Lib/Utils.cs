@@ -207,7 +207,7 @@ namespace CmisSync.Lib
             {
                 bool allowBlankFiles = false; //TODO: add a preference repoInfo.allowBlankFiles
                 bool limitFilesize = true; //TODO: add preference for filesize limiting
-                long filesizeLimit = 256 * 1024 * 1024; //TODO: add a preference for filesize limit?
+                long filesizeLimit = 1024 * 1024 * 1024; //TODO: add a preference for filesize limit?
 
                 FileInfo fileInfo = new FileInfo(filepath);
 

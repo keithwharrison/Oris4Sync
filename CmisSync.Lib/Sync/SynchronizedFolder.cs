@@ -489,6 +489,11 @@ namespace CmisSync.Lib.Sync
                     //Unable to access file/directory
                     recoverable = true;
                 }
+                else if (exception is ConflictException)
+                {
+                    //Conflict while performing server operation
+                    recoverable = true;
+                }
                 else if (exception is ServerBusyException)
                 {
                     //Server Busy
