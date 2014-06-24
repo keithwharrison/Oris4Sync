@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -162,10 +162,27 @@ namespace DotCMIS.Binding.Impl
                 // send data
                 if (writer != null)
                 {
-                    conn.AllowWriteStreamBuffering = true;
-                    Stream requestStream = conn.GetRequestStream();
-                    writer(requestStream);
-                    requestStream.Close();
+                    //Write to memory stream
+                    string tempFile = Path.GetTempFileName();
+                    try 
+                    {
+                        using (FileStream fileStream = new FileStream(tempFile, FileMode.OpenOrCreate,
+                            FileAccess.ReadWrite, FileShare.None))
+                        {
+                            writer(fileStream);
+                            fileStream.Position = 0;
+                            conn.AllowWriteStreamBuffering = false;
+                            conn.ContentLength = fileStream.Length;
+                            using (Stream requestStream = conn.GetRequestStream())
+                            {
+                                    StreamCopy(fileStream, requestStream);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        File.Delete(tempFile);
+                    }
                 }
                 else
                 {
@@ -201,6 +218,16 @@ namespace DotCMIS.Binding.Impl
             catch (Exception e)
             {
                 throw new CmisConnectionException("Cannot access " + url + ": " + e.Message, e);
+            }
+        }
+
+        private static void StreamCopy(Stream input, Stream output)
+        {
+            byte[] buffer = new byte[short.MaxValue];
+            int read;
+            while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                output.Write(buffer, 0, read);
             }
         }
 
