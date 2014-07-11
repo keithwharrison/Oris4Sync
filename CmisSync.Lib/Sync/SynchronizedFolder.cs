@@ -143,7 +143,7 @@ namespace CmisSync.Lib.Sync
                 this.repoinfo = repoInfo;
 
                 // Database is the user's AppData/Roaming
-                database = new Database(repoinfo.CmisDatabase);
+                database = new Database(repoinfo.CmisDatabase, repoinfo.TargetDirectory);
 
                 // Get path on remote repository.
                 remoteFolderPath = repoInfo.RemotePath;
@@ -364,10 +364,14 @@ namespace CmisSync.Lib.Sync
                     try
                     {
                         repo.OnSyncComplete(syncFull);
-                        session = null; //forget session information between syncs
+                    }
+                    catch (Exception e)
+                    {
+                        repo.OnSyncError(new BaseException(e));
                     }
                     finally
                     {
+                        session = null; //forget session information between syncs
                         manualResetEvent.Set();
                     }
                 }

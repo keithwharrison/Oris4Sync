@@ -61,10 +61,11 @@ namespace CmisSync.Lib.Cmis
         /// <summary>
         /// Constructor.
         /// </summary>
-        public Database(string dataPath)
+        public Database(string dataPath, string targetDirectory)
         {
             this.databaseFileName = dataPath;
-            pathPrefixSize = ConfigManager.CurrentConfig.FoldersPath.Length + 1;
+            string parentDirectory = Path.GetDirectoryName(targetDirectory);
+            pathPrefixSize = parentDirectory.Length + (parentDirectory.EndsWith("\\") ? 0 : 1);
         }
 
 
