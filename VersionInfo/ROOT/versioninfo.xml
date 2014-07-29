@@ -6,16 +6,16 @@
 		<language>en</language>
 
 		<item>
-			<title>Version 3.1.10.0</title>
+			<title>Version 3.1.11.0</title>
 			<description><![CDATA[
-				<div style="font-family: 'Lucida Grande', Arial, sans-serif; font-size: 9pt; padding: 3px;"> 	<h1 style="font-size: 9pt; background-color: #e6edff; border: dotted 1px #ccc; margin: 0; padding: 3px;"> 		New in Release 3.1.10.0 	</h1> 	<div style="border: dotted 1px #ccc; border-width: 0 1px 1px 1px; padding: 3px; margin: 0 0 12px 0;"> 		<ul> 			<li>Performance enhancements and bug fixes.</li> 		</ul> 	</div> </div> 
+				<div style="font-family: 'Lucida Grande', Arial, sans-serif; font-size: 9pt; padding: 3px;"> 	<h1 style="font-size: 9pt; background-color: #e6edff; border: dotted 1px #ccc; margin: 0; padding: 3px;"> 		New in Release 3.1.11.0 	</h1> 	<div style="border: dotted 1px #ccc; border-width: 0 1px 1px 1px; padding: 3px; margin: 0 0 12px 0;"> 		<ul> 			<li>Performance enhancements and bug fixes.</li> 		</ul> 	</div> </div> 
 			]]></description>
- 			<pubDate>Tue, 24 Jun 2014 11:40:18 GMT</pubDate>
-			<enclosure url="http://update.oris4.com/Oris4Sync.3.1.10.0.exe"
-				sparkle:version="3.1.10.0"
-				length="3972008"
+ 			<pubDate>Tue, 29 Jul 2014 09:52:01 GMT</pubDate>
+			<enclosure url="http://update.oris4.com/Oris4Sync.3.1.11.0.exe"
+				sparkle:version="3.1.11.0"
+				length="3972112"
 				type="application/octet-stream"
-				sparkle:dsaSignature="w1drfEUq76njMi9hhKml0kEYmqDVYpG0LpvRnRrUsWksY2I2LPg1sw=="/>
+				sparkle:dsaSignature="TpJHCmytVc8uZR2QQQz1CFAXCvdsvfWQvZqdl/IRSPMKrM5tzY5RhQ=="/>
 		</item>
 
 		<item>
@@ -28,7 +28,7 @@
 				sparkle:version="3.1.1.0"
 				length="3658384"
 				type="application/octet-stream"
-				sparkle:dsaSignature="GpmXJX+kbrZ/2xBQlw+hOsOD3zuXm6ZyQTePdhYoH9r+Y0jiwgK3Sg=="/>
+				sparkle:dsaSignature="I+IjjHN0hUTKPnTj51K7kXmQGquAr+HJgCYogIs52zA9nUTNLffOwQ=="/>
 		</item>
 
 		<item>
@@ -41,7 +41,7 @@
 				sparkle:version="3.0.2.0"
 				length="2541803"
 				type="application/octet-stream"
-				sparkle:dsaSignature="gZky67V36wsasYmwmHrki76wVU63equ3eKSI+/JhBGmIKyyIVEb/sA=="/>
+				sparkle:dsaSignature="JmzRKLhkPS9SuobpNmp67v3EP20iLa/8Xgzjg0VkfE5g/FhdpMho+A=="/>
 		</item>
 
 	</channel>
